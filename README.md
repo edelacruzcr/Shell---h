@@ -1,10 +1,14 @@
 # 📖 ayuda.sh
 
+![Versión](https://img.shields.io/badge/versión-1.0.0-blue.svg)
+![Licencia](https://img.shields.io/badge/licencia-MIT-green.svg)
+![Bash](https://img.shields.io/badge/bash-4.0%2B-orange.svg)
+
 Guía interactiva de comandos de terminal para principiantes y desarrolladores.
 
 Escribes una palabra, eliges un comando y te explica detalladamente qué hace, cómo se usa, su sintaxis exacta con marcadores explicativos y te da ejemplos reales.
 
-![demo](demo.gif)
+---
 
 ## ✨ Características
 
@@ -58,8 +62,8 @@ ayuda cat          # Muestra directamente detalles del comando cat
 
 ### Navegación dentro del menú
 
-- **1 a 6**: Explora una categoría específica.
-- **7**: Muestra **TODOS** los comandos registrados.
+- **1 a 7**: Explora una categoría específica.
+- **8**: Muestra **TODOS** los comandos registrados.
 - **Escribir cualquier palabra** (ej: `copiar`, `proceso`, `red`): Realiza una búsqueda instantánea.
 - **Avanzar de página**: Escribe `n` (o `s`) y pulsa Enter para ir a la siguiente página.
 - **Retroceder de página**: Escribe `p` (o `a`) y pulsa Enter para ir a la página anterior.
@@ -69,21 +73,28 @@ ayuda cat          # Muestra directamente detalles del comando cat
 
 ---
 
-## 📂 Categorías Disponibles
+## 📸 Ejemplo de Uso
 
-| Categoría | Qué incluye |
-|-----------|-------------|
-| **Archivos y carpetas** | `pwd`, `cd`, `ls`, `mkdir`, `cp`, `mv`, `rm`, `tar`, `zip`, `chown`, etc. |
-| **Ver contenido** | `cat`, `less`, `more`, `head`, `tail`, `wc`, `nl`, `column`, `xxd`, `view`, etc. |
-| **Buscar** | `grep`, `find`, `which`, `whereis`, `locate`, `fd`, etc. |
-| **Texto y tuberías** | `echo`, `sort`, `uniq`, `cut`, `tr`, `sed`, `awk`, `tee`, `rev`, tuberías (`\|`), etc. |
-| **Sistema y procesos** | `sudo`, `history`, `chmod`, `df`, `du`, `free`, `ps`, `top`, `htop`, `kill`, `ping`, etc. |
-| **Redes, SSH y cortafuegos** | `ssh`, `scp`, `rsync`, `ss`, `netstat`, `lsof`, `fuser`, `ufw allow/deny`, `ip a`, `dig`, etc. |
-| **Atajos de teclado** | `Tab`, `Ctrl+R`, `Ctrl+C`, `Ctrl+L`, `Ctrl+U`, `Ctrl+K`, `Alt+B`, `Alt+F`, `!!`, etc. |
+### Menú Principal
 
----
+```text
+  ╔═══════════════════════════════════════════════════════════════════╗
+  ║   📖  AYUDA INTERACTIVA DE COMANDOS                              ║
+  ║   Escribe una opción o una palabra para buscar                    ║
+  ╚═══════════════════════════════════════════════════════════════════╝
 
-## 📸 Ejemplo de Ficha de Comando
+  CATEGORÍAS:
+    1) Archivos y carpetas
+    2) Ver contenido de archivos
+    3) Buscar
+    4) Texto y tuberías
+    5) Sistema y procesos
+    6) Redes, SSH y cortafuegos
+    7) Atajos de teclado
+    8) Ver TODO
+```
+
+### Ejemplo de Ficha de Comando
 
 ```text
   ╭────────────────────────────────────────────────────────────────────╮
@@ -105,12 +116,26 @@ ayuda cat          # Muestra directamente detalles del comando cat
 
 ---
 
+## 📂 Categorías Disponibles
+
+| Categoría | Qué incluye |
+|-----------|-------------|
+| **Archivos y carpetas** | `pwd`, `cd`, `ls`, `mkdir`, `cp`, `mv`, `rm`, `tar`, `zip`, `chown`, etc. |
+| **Ver contenido** | `cat`, `less`, `more`, `head`, `tail`, `wc`, `nl`, `column`, `xxd`, `view`, etc. |
+| **Buscar** | `grep`, `find`, `which`, `whereis`, `locate`, `fd`, etc. |
+| **Texto y tuberías** | `echo`, `sort`, `uniq`, `cut`, `tr`, `sed`, `awk`, `tee`, `rev`, tuberías (`\|`), etc. |
+| **Sistema y procesos** | `sudo`, `history`, `chmod`, `df`, `du`, `free`, `ps`, `top`, `htop`, `kill`, `ping`, etc. |
+| **Redes, SSH y cortafuegos** | `ssh`, `scp`, `rsync`, `ss`, `netstat`, `lsof`, `fuser`, `ufw allow/deny`, `ip a`, `dig`, etc. |
+| **Atajos de teclado** | `Tab`, `Ctrl+R`, `Ctrl+C`, `Ctrl+L`, `Ctrl+U`, `Ctrl+K`, `Alt+B`, `Alt+F`, `!!`, etc. |
+
+---
+
 ## 🛠️ Añadir tus propios comandos
 
 Edita `ayuda.sh` y busca el array `CMDS=(`. Cada entrada utiliza la siguiente estructura separada por tuberías (`|`):
 
 ```bash
-"comando|descripción corta|ejemplo|explicación larga y sintaxis|categoría"
+"comando <marcador>|descripción corta|ejemplo|explicación larga y sintaxis|categoría"
 ```
 
 Ejemplo real:
