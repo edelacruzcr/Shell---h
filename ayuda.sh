@@ -9,19 +9,10 @@
 #  amigable. Puedes navegar por categorías, buscar por palabra clave y ver
 #  el detalle de cada comando con ejemplo y explicación.
 #
-#  PENSADO PARA
-#  ------------
-#  Personas que están aprendiendo a usar la terminal y necesitan un
-#  recordatorio rápido sin tener que buscar en Google.
-#
 #  USO
 #  ---
 #    ./ayuda.sh                → abre el menú interactivo
 #    ./ayuda.sh borrar         → busca directamente "borrar"
-#
-#  INSTALACIÓN RÁPIDA (UN SOLO COMANDO)
-#  ------------------------------------
-#  curl -sSL https://raw.githubusercontent.com/edelacruzcr/Shell---h/main/ayuda.sh -o ~/.ayuda.sh && chmod +x ~/.ayuda.sh && (grep -q "alias ayuda=" ~/.bashrc 2>/dev/null || echo "alias ayuda='~/.ayuda.sh'" >> ~/.bashrc) && source ~/.bashrc
 #
 #  AUTOR
 #  -----
@@ -35,191 +26,263 @@
 
 
 # =============================================================================
-# 1. COLORES
+# 1. COLORES Y ESTILOS (Paleta amigable y moderna)
 # =============================================================================
-# Códigos ANSI para dar color al texto en la terminal.
-# Si tu terminal no soporta colores, pon todo a "" (vacío) y listo.
-#
-# Estructura: $'\033[<código>m'
-#   - 1;32  → verde brillante
-#   - 1;33  → amarillo brillante
-#   - 1;36  → cian brillante
-#   - 1;35  → magenta brillante
-#   - 0     → reset (vuelve al color normal)
-#
-G=$'\033[1;32m'   # Verde  → comandos
-Y=$'\033[1;33m'   # Amarillo → títulos y cabeceras
-C=$'\033[1;36m'   # Cian   → nombres de comando en las listas
-M=$'\033[1;35m'   # Magenta → separadores
-R=$'\033[0m'      # Reset  → vuelve al color por defecto
+G=$'\033[1;32m'   # Verde esmeralda → comandos y números
+C=$'\033[1;36m'   # Cian brillante  → títulos de sección
+B=$'\033[1;34m'   # Azul suave      → recuadros y bordes amigables
+M=$'\033[1;35m'   # Magenta         → separadores
+D=$'\033[0;90m'   # Gris tenue      → notas y ayudas
+Y=$'\033[1;33m'   # Amarillo suave  → ejemplos
+R=$'\033[0m'      # Reset           → vuelve al color por defecto
 
 
 # =============================================================================
 # 2. BASE DE DATOS DE COMANDOS
 # =============================================================================
-# Cada comando es UNA línea con 5 campos separados por el carácter "|".
-#
 # Formato:
 #   "comando|descripción corta|ejemplo|explicación larga|categoría"
-#
-# Reglas:
-#   - NO uses el carácter "|" dentro de ningún campo.
-#   - La categoría debe ser UNA de estas:
-#       archivos  → archivos y carpetas
-#       ver       → ver contenido de archivos
-#       buscar    → buscar cosas
-#       texto     → texto, variables y tuberías
-#       sistema   → sistema, procesos, permisos
-#       atajos    → atajos de teclado
-#
-# Para añadir un comando nuevo, copia una línea y adáptala.
 #
 CMDS=(
 
   # ---------------------------------------------------------------------------
   # CATEGORÍA: archivos
   # ---------------------------------------------------------------------------
-  "pwd|muestra en qué carpeta estás|pwd|Imprime la ruta completa de la carpeta en la que estás trabajando.\n\n  • Sintaxis: pwd\n  • Argumentos: No requiere argumentos.\n  • Uso: Muestra el directorio de trabajo actual (Current Working Directory).|archivos"
-  "cd X|entra a la carpeta X|cd Documentos|Cambia tu ubicación actual al directorio especificado en X.\n\n  • Sintaxis: cd <carpeta>\n  • Argumentos:\n    - X : Ruta o nombre del directorio de destino (ej: cd Documentos o cd /var/log).\n  • Tip: Puedes usar rutas relativas o absolutas.|archivos"
-  "cd ..|sube un nivel|cd ..|Sube un nivel en la jerarquía de directorios (va a la carpeta padre).\n\n  • Sintaxis: cd ..\n  • Argumentos:\n    - .. : Símbolo en Linux que representa el directorio padre superior.|archivos"
-  "cd ~|va a tu carpeta personal|cd ~|Navega directamente a tu directorio personal (Home).\n\n  • Sintaxis: cd ~ (o simplemente cd)\n  • Argumentos:\n    - ~ : Atajo que representa la ruta de tu usuario (/home/tu_usuario).|archivos"
-  "cd -|vuelve a la anterior|cd -|Regresa a la carpeta previa en la que estabas antes del último cd.\n\n  • Sintaxis: cd -\n  • Argumentos:\n    - - : Representa el directorio anterior (\$OLDPWD).|archivos"
-  "ls|lista archivos y carpetas|ls|Muestra una lista simple con los nombres de archivos y carpetas.\n\n  • Sintaxis: ls [carpeta]\n  • Argumentos:\n    - [carpeta] : (Opcional) Ruta de la carpeta a listar. Si se omite, usa la actual.|archivos"
-  "ls -lah|lista todo con detalles|ls -lah|Lista detallada de todo el contenido del directorio.\n\n  • Sintaxis: ls -lah [carpeta]\n  • Opciones / Flags:\n    - -l : Formato largo (muestra permisos, dueño, tamaño y fecha).\n    - -a : (all) Muestra archivos ocultos (los que empiezan por '.').\n    - -h : (human-readable) Muestra tamaños en KB, MB, GB.|archivos"
-  "mkdir X|crea una carpeta|mkdir Proyectos|Crea una carpeta nueva en el directorio actual.\n\n  • Sintaxis: mkdir <nombre_carpeta>\n  • Argumentos:\n    - X : Nombre de la nueva carpeta a crear.|archivos"
-  "mkdir -p X/Y|crea toda la ruta|mkdir -p a/b/c|Crea una estructura completa de carpetas anidadas.\n\n  • Sintaxis: mkdir -p <ruta/anidada>\n  • Opciones / Flags:\n    - -p : (parents) Crea carpetas intermedias si no existen sin dar error.\n  • Argumentos:\n    - X/Y : Ruta anidada a crear (ej: proyectos/2026/fotos).|archivos"
-  "touch X|crea archivo vacío|touch notas.txt|Crea un archivo vacío o actualiza la fecha de modificación si ya existe.\n\n  • Sintaxis: touch <archivo>\n  • Argumentos:\n    - X : Nombre del archivo a crear o actualizar.|archivos"
-  "cp A B|copia A a B|cp notas.txt copia.txt|Copia un archivo individual de la ruta origen (A) al destino (B).\n\n  • Sintaxis: cp <origen> <destino>\n  • Argumentos:\n    - A : Archivo origen a copiar.\n    - B : Nombre del archivo copia o directorio destino.|archivos"
-  "cp -r A B|copia carpeta|cp -r Documentos Backup|Copia un directorio completo con todo su contenido.\n\n  • Sintaxis: cp -r <carpeta_origen> <carpeta_destino>\n  • Opciones / Flags:\n    - -r : (recursive) Copia recursiva de carpetas y subcarpetas.\n  • Argumentos:\n    - A : Carpeta origen.\n    - B : Nombre de la carpeta destino.|archivos"
-  "mv A B|mueve o renombra|mv viejo.txt nuevo.txt|Mueve o renombra un archivo o carpeta.\n\n  • Sintaxis: mv <origen> <destino>\n  • Argumentos:\n    - A : Archivo o carpeta a mover/renombrar.\n    - B : Nuevo nombre o directorio de destino.|archivos"
-  "rm X|borra un archivo|rm notas.txt|Elimina un archivo de forma permanente.\n\n  • Sintaxis: rm <archivo>\n  • Argumentos:\n    - X : Nombre del archivo a eliminar.\n  • CUIDADO: El borrado es definitivo (no hay papelera).|archivos"
-  "rm -r X|borra carpeta y todo|rm -r Proyectos|Elimina una carpeta y todo su contenido de forma recursiva.\n\n  • Sintaxis: rm -r <carpeta>\n  • Opciones / Flags:\n    - -r : (recursive) Elimina la carpeta y subcarpetas.\n  • Argumentos:\n    - X : Nombre de la carpeta a borrar.|archivos"
-  "rm -i X|borra preguntando|rm -i notas.txt|Elimina pidiendo confirmación antes de borrar cada archivo.\n\n  • Sintaxis: rm -i <archivo>\n  • Opciones / Flags:\n    - -i : (interactive) Pide confirmación (y/n).\n  • Argumentos:\n    - X : Archivo a borrar.|archivos"
+  "pwd|muestra en qué carpeta estás|pwd|Imprime la ruta completa de la carpeta en la que estás trabajando.\n\n  • Sintaxis: pwd\n  • Argumentos: No requiere argumentos.\n  • Opciones útiles:\n    - pwd -P : Muestra la ruta física real resolviendo enlaces simbólicos.\n  • Qué más puedes hacer: Usar '\$(pwd)' dentro de scripts para guardar la ubicación actual en variables.|archivos"
+  "cd <nombre_de_carpeta>|entra a una carpeta|cd Documentos|Cambia tu ubicación actual al directorio especificado.\n\n  • Sintaxis: cd <nombre_de_carpeta>\n  • Ejemplos útiles:\n    - cd Documentos/Proyectos  → Entra a carpetas anidadas.\n    - cd /var/log             → Usa ruta absoluta desde la raíz.\n  • Tip: Presiona la tecla Tab para autocompletar el nombre de la carpeta.|archivos"
+  "cd ..|sube al directorio padre|cd ..|Navega un nivel hacia arriba en la jerarquía de carpetas.\n\n  • Sintaxis: cd ..\n  • Qué más puedes hacer:\n    - cd ../..        → Sube dos niveles seguidos.\n    - cd ../../Fotos  → Sube dos niveles y entra a la carpeta Fotos.|archivos"
+  "cd ~|va a tu carpeta personal|cd ~|Navega directamente a tu directorio personal (Home del usuario).\n\n  • Sintaxis: cd ~ (o simplemente 'cd' sin argumentos)\n  • Qué representa '~': Es un atajo para '/home/tu_usuario'.\n  • Ejemplo: cd ~/Descargas  → Va directo a tu carpeta de descargas desde cualquier lugar.|archivos"
+  "cd -|vuelve a la carpeta anterior|cd -|Regresa al último directorio en el que estuviste antes del comando cd previo.\n\n  • Sintaxis: cd -\n  • Qué más puedes hacer: Es muy útil para alternar rápidamente entre dos carpetas lejanas en la terminal (\$OLDPWD).|archivos"
+  "ls|lista archivos y carpetas|ls|Muestra los nombres de los archivos y carpetas del directorio actual.\n\n  • Sintaxis: ls [ruta_opcional]\n  • Opciones comunes:\n    - ls /var/log  → Lista el contenido de otra carpeta especificada.\n  • Tip: Por defecto no muestra archivos ocultos que empiezan con punto (.).|archivos"
+  "ls -lah|lista todo con detalles|ls -lah|Muestra una lista detallada con permisos, propietario, tamaño y fecha de modificación.\n\n  • Sintaxis: ls -lah [ruta_opcional]\n  • Desglose de banderas:\n    - -l : Formato largo detallado (permisos, dueño, bytes, fecha).\n    - -a : Incluye archivos ocultos (los que inician con '.').\n    - -h : Muestra tamaños legibles para humanos (KB, MB, GB).\n  • Opciones extra:\n    - ls -laht : Ordena los archivos por fecha de modificación (los más recientes primero).\n    - ls -lahS : Ordena los archivos por tamaño (los más grandes primero).|archivos"
+  "mkdir <nombre_de_carpeta>|crea una nueva carpeta|mkdir MisDocumentos|Crea un directorio o carpeta nueva en la ubicación actual.\n\n  • Sintaxis: mkdir <nombre_de_carpeta>\n  • Ejemplos:\n    - mkdir Proyecto1 Proyecto2  → Crea múltiples carpetas al mismo tiempo.\n    - mkdir \"Mi Carpeta\"        → Usa comillas si el nombre contiene espacios.|archivos"
+  "mkdir -p <ruta/anidada>|crea carpetas con subcarpetas|mkdir -p proyectos/2026/fotos|Crea la estructura completa de carpetas intermedias sin arrojar error si ya existen.\n\n  • Sintaxis: mkdir -p <ruta/completa/anidada>\n  • Opciones:\n    - -p (parents): Crea de forma automática todas las carpetas padres que no existan en la ruta.|archivos"
+  "rmdir <nombre_de_carpeta>|elimina una carpeta vacía|rmdir CarpetaVacia|Elimina una carpeta únicamente si no contiene ningún archivo o subcarpeta.\n\n  • Sintaxis: rmdir <nombre_de_carpeta>\n  • Nota de seguridad: Si la carpeta tiene contenido, la terminal dará error (evita borrados accidentales). Usa 'rm -r' para carpetas con archivos.|archivos"
+  "touch <nombre_de_archivo.txt>|crea un archivo vacío|touch notas.txt|Crea un archivo nuevo vacío o actualiza la fecha de modificación si el archivo ya existe.\n\n  • Sintaxis: touch <nombre_de_archivo>\n  • Qué más puedes hacer:\n    - touch archivo1.txt archivo2.txt  → Crea varios archivos vacíos a la vez.\n    - Sirve para preparar archivos antes de editarlos con nano o VS Code.|archivos"
+  "cp <origen.txt> <destino.txt>|copia un archivo|cp notas.txt copia_notas.txt|Copia un archivo desde una ruta de origen a una de destino.\n\n  • Sintaxis: cp <archivo_origen> <archivo_destino>\n  • Ejemplos útiles:\n    - cp notas.txt ~/Documentos/  → Copia el archivo a otra carpeta manteniendo su nombre.\n    - cp -i notas.txt copia.txt   → Pide confirmación antes de sobrescribir si el destino ya existe.|archivos"
+  "cp -r <carpeta_origen> <destino>|copia una carpeta completa|cp -r Fotos/ CopiaFotos/|Copia un directorio completo con todos sus archivos y subcarpetas anidadas.\n\n  • Sintaxis: cp -r <carpeta_origen> <carpeta_destino>\n  • Banderas claves:\n    - -r (recursive): Obligatorio para procesar todo el contenido interno de la carpeta.|archivos"
+  "mv <origen> <destino>|mueve o renombra|mv viejo.txt nuevo.txt|Mueve archivos/carpetas a otra ubicación o los renombra si están en la misma ruta.\n\n  • Sintaxis: mv <origen> <destino>\n  • Ejemplos:\n    - Renombrar: mv datos.txt final.txt\n    - Mover:     mv archivo.txt ~/Documentos/\n  • Opción recomendada:\n    - mv -i origen destino  → Pide confirmación si va a sobrescribir un archivo existente.|archivos"
+  "rm <nombre_de_archivo.txt>|elimina un archivo|rm archivo_viejo.txt|Elimina un archivo de manera permanente del sistema de archivos.\n\n  • Sintaxis: rm <nombre_de_archivo>\n  • ADVERTENCIA: En la terminal de Linux NO hay papelera de reciclaje; la eliminación es instantánea y definitiva.|archivos"
+  "rm -r <nombre_de_carpeta>|elimina carpeta y contenido|rm -r CarpetaObsoleta|Elimina de forma recursiva una carpeta junto con todos sus archivos y subcarpetas internas.\n\n  • Sintaxis: rm -r <nombre_de_carpeta>\n  • Opción de fuerza bruta:\n    - rm -rf <carpeta>  → Fuerza la eliminación ignorando advertencias y permisos de lectura.\n  • PRECAUCIÓN EXTREMA: Revisa bien la ruta antes de usar '-rf'.|archivos"
+  "rm -i <nombre_de_archivo.txt>|elimina pidiendo confirmación|rm -i documento.pdf|Pide confirmación previa ('y' o 'n') en pantalla antes de borrar cada archivo.\n\n  • Sintaxis: rm -i <nombre_de_archivo>\n  • Recomendación: Excelente práctica para aprendices al borrar archivos importantes o usar comodines (ej: rm -i *.txt).|archivos"
+  "ln -s <ruta_real> <enlace>|crea un acceso directo|ln -s /var/www/html mi_web|Crea un enlace simbólico (acceso directo) hacia un archivo o carpeta en el sistema.\n\n  • Sintaxis: ln -s <objetivo_original> <nombre_del_acceso_directo>\n  • Qué más puedes hacer: Te permite acceder rápidamente a rutas profundas o compartir librerías sin duplicar archivos.|archivos"
+  "tar -czvf <archivo.tar.gz> <carpeta>|comprime carpeta en tar.gz|tar -czvf respaldo.tar.gz MisDocumentos/|Comprime y empaqueta una carpeta completa en un archivo comprimido .tar.gz.\n\n  • Sintaxis: tar -czvf <nombre.tar.gz> <carpeta_a_comprimir>\n  • Explicación de banderas:\n    - -c : Crear un nuevo paquete.\n    - -z : Comprimir usando el algoritmo Gzip.\n    - -v : Mostrar en pantalla cada archivo procesado (Verbose).\n    - -f : Especificar el nombre del archivo resultante.|archivos"
+  "tar -xzvf <archivo.tar.gz>|descomprime archivo tar.gz|tar -xzvf respaldo.tar.gz|Descomprime y extrae todo el contenido de un paquete comprimido .tar.gz.\n\n  • Sintaxis: tar -xzvf <archivo.tar.gz>\n  • Qué más puedes hacer:\n    - tar -xzvf archivo.tar.gz -C /ruta/destino  → Extrae el contenido directamente en otra carpeta especificada.|archivos"
+  "zip -r <archivo.zip> <carpeta>|crea archivo comprimido zip|zip -r mis_fotos.zip Fotos/|Crea un paquete comprimido en formato estándar .zip compatible con Windows y macOS.\n\n  • Sintaxis: zip -r <nombre_final.zip> <carpeta_o_archivos>\n  • Opción importante:\n    - -r (recursive): Necesario para incluir subcarpetas y archivos internos.|archivos"
+  "unzip <archivo.zip>|extrae un archivo zip|unzip mis_fotos.zip|Extrae el contenido completo de un archivo comprimido .zip en la carpeta actual.\n\n  • Sintaxis: unzip <archivo.zip>\n  • Qué más puedes hacer:\n    - unzip -l archivo.zip       → Lista el contenido del ZIP sin extraerlo.\n    - unzip archivo.zip -d /ruta → Extrae en un directorio destino específico.|archivos"
+  "chown <usuario>:<grupo> <archivo>|cambia propietario y grupo|chown juan:desarrollo notas.txt|Modifica el usuario dueño y el grupo asignado a un archivo o carpeta en el sistema.\n\n  • Sintaxis: chown <usuario>:<grupo> <archivo_o_carpeta>\n  • Qué más puedes hacer:\n    - sudo chown -R usuario:grupo carpeta/  → Cambia el propietario de forma recursiva a todo el contenido interno.|archivos"
 
   # ---------------------------------------------------------------------------
   # CATEGORÍA: ver
   # ---------------------------------------------------------------------------
-  "cat F|muestra todo el archivo|cat notas.txt|Imprime todo el contenido de un archivo en la terminal.\n\n  • Sintaxis: cat <archivo>\n  • Argumentos:\n    - F : Archivo a leer.\n  • Nota: Recomendado para archivos cortos.|ver"
-  "less F|abre por páginas|less notas.txt|Visualizador interactivo para leer archivos página por página.\n\n  • Sintaxis: less <archivo>\n  • Argumentos:\n    - F : Archivo a leer.\n  • Controles: Flechas para navegar, / para buscar texto, q para salir.|ver"
-  "head F|primeras 10 líneas|head notas.txt|Muestra las primeras 10 líneas de un archivo.\n\n  • Sintaxis: head <archivo>\n  • Argumentos:\n    - F : Archivo a visualizar.|ver"
-  "head -n 5 F|primeras 5 líneas|head -n 5 notas.txt|Muestra una cantidad específica de líneas iniciales.\n\n  • Sintaxis: head -n <número> <archivo>\n  • Opciones / Flags:\n    - -n <N> : Especifica el número de líneas a mostrar.\n  • Argumentos:\n    - F : Archivo a visualizar.|ver"
-  "tail F|últimas 10 líneas|tail notas.txt|Muestra las últimas 10 líneas de un archivo.\n\n  • Sintaxis: tail <archivo>\n  • Argumentos:\n    - F : Archivo a visualizar.|ver"
-  "tail -f F|sigue en vivo|tail -f log.txt|Monitorea en tiempo real las nuevas líneas que se añaden al archivo.\n\n  • Sintaxis: tail -f <archivo_log>\n  • Opciones / Flags:\n    - -f : (follow) Mantiene el archivo abierto y muestra datos nuevos.\n  • Argumentos:\n    - F : Archivo de log. (Presiona Ctrl+C para salir).|ver"
-  "wc -l F|cuenta líneas|wc -l notas.txt|Cuenta la cantidad total de líneas de un archivo.\n\n  • Sintaxis: wc -l <archivo>\n  • Opciones / Flags:\n    - -l : (lines) Muestra solo el conteo de líneas.\n  • Argumentos:\n    - F : Archivo a analizar.|ver"
+  "cat <nombre_de_archivo.txt>|muestra todo el contenido|cat notas.txt|Imprime el contenido completo de uno o varios archivos en la terminal.\n\n  • Sintaxis: cat <nombre_de_archivo.txt>\n  • Qué más puedes hacer con cat:\n    - cat a.txt b.txt > unificado.txt → Une (concatena) dos archivos en uno solo nuevo.\n    - cat -n notas.txt                → Muestra el contenido enumerando cada línea.\n    - cat > nuevo_archivo.txt          → Escribe texto directamente desde la terminal hasta presionar Ctrl+D.\n  • Tip: Para archivos muy largos prefiere usar 'less' para no saturar la pantalla.|ver"
+  "less <nombre_de_archivo.txt>|visualiza por páginas navegables|less log_sistema.txt|Abre un visor interactivo amigable para leer archivos grandes página por página.\n\n  • Sintaxis: less <nombre_de_archivo.txt>\n  • Mandos interactivos dentro de less:\n    - Flechas / RePág / AvPág : Desplazar el texto arriba y abajo.\n    - /texto_a_buscar         : Busca una palabra dentro del archivo (N para siguiente coincidencia).\n    - g / G                   : Salta al inicio (g) o al final (G) del archivo.\n    - q                       : Salir del visor y regresar al terminal.|ver"
+  "more <nombre_de_archivo.txt>|visor página por página clásico|more documento.txt|Visualizador clásico de texto por páginas.\n\n  • Sintaxis: more <nombre_de_archivo.txt>\n  • Controles:\n    - Barra espaciadora : Avanza una página completa.\n    - Enter             : Avanza línea por línea.\n    - q                 : Sale del visor inmediatamente.|ver"
+  "head <nombre_de_archivo.txt>|muestra primeras 10 líneas|head lista_contactos.txt|Muestra únicamente las primeras 10 líneas iniciales de un archivo de texto.\n\n  • Sintaxis: head <nombre_de_archivo.txt>\n  • Qué más puedes hacer: Es ideal para revisar rápidamente la cabecera o estructura de archivos CSV o logs sin cargar todo el archivo.|ver"
+  "head -n <numero> <archivo.txt>|muestra las N líneas iniciales|head -n 25 servidor.log|Imprime la cantidad exacta de líneas iniciales que le indiques.\n\n  • Sintaxis: head -n <numero_de_lineas> <nombre_de_archivo.txt>\n  • Ejemplo:\n    - head -n 5 datos.txt  → Imprime solo las primeras 5 líneas.|ver"
+  "tail <nombre_de_archivo.txt>|muestra últimas 10 líneas|tail historial.log|Muestra únicamente las últimas 10 líneas finales de un archivo.\n\n  • Sintaxis: tail <nombre_de_archivo.txt>\n  • Uso común: Consultar los registros o eventos más recientes generados por un programa.|ver"
+  "tail -n <numero> <archivo.txt>|muestra las N líneas finales|tail -n 50 errores.log|Imprime la cantidad especificada de líneas finales de un archivo.\n\n  • Sintaxis: tail -n <numero_de_lineas> <nombre_de_archivo.txt>\n  • Ejemplo:\n    - tail -n 100 app.log  → Imprime las últimas 100 líneas del registro.|ver"
+  "tail -f <nombre_de_archivo.log>|monitorea cambios en tiempo real|tail -f /var/log/syslog|Mantiene el archivo abierto y muestra en vivo cada nueva línea agregada.\n\n  • Sintaxis: tail -f <nombre_de_archivo.log>\n  • Qué más puedes hacer:\n    - Para detener el seguimiento en vivo pulsa la combinación de teclas Ctrl+C.\n    - tail -f -n 20 app.log  → Muestra las últimas 20 líneas y se queda monitoreando en tiempo real.|ver"
+  "wc -l <nombre_de_archivo.txt>|cuenta total de líneas|wc -l lista_usuarios.txt|Cuenta la cantidad exactas de líneas de texto presentes en un archivo.\n\n  • Sintaxis: wc -l <nombre_de_archivo.txt>\n  • Qué más puedes hacer: Combinarlo con tuberías para contar resultados, ej: 'ls | wc -l' cuenta cuántos archivos hay en la carpeta.|ver"
+  "wc -w <nombre_de_archivo.txt>|cuenta total de palabras|wc -w ensayo.txt|Cuenta el número de palabras contenidas en el archivo.\n\n  • Sintaxis: wc -w <nombre_de_archivo.txt>\n  • Opciones adicionales de wc:\n    - wc -c archivo.txt  → Cuenta la cantidad de bytes/caracteres.|ver"
+  "nl <nombre_de_archivo.txt>|imprime texto con líneas numeradas|nl script.sh|Imprime el contenido de un archivo anteponiendo el número de línea correspondiente.\n\n  • Sintaxis: nl <nombre_de_archivo.txt>\n  • Qué más puedes hacer: Facilita encontrar líneas específicas en archivos de código fuente o configuración.|ver"
+  "column -t <archivo.txt>|alinea datos en columnas limpias|column -t datos.csv|Analiza el texto y alinea dinámicamente las palabras en columnas ordenadas.\n\n  • Sintaxis: column -t <nombre_de_archivo.txt>\n  • Qué más puedes hacer:\n    - column -t -s',' archivo.csv  → Especifica la coma (,) como separador de columnas.|ver"
+  "xxd <nombre_de_archivo>|ver contenido en código hexadecimal|xxd imagen.png|Muestra una volcado hexadecimal y su representación ASCII equivalente lado a lado.\n\n  • Sintaxis: xxd <nombre_de_archivo>\n  • Qué más puedes hacer:\n    - xxd -l 64 archivo.bin  → Muestra únicamente los primeros 64 bytes en hexadecimal.|ver"
+  "hexdump -C <nombre_de_archivo>|inspecciona bytes en formato hex|hexdump -C datos.raw|Inspecciona el contenido interno byte a byte de archivos binarios o ejecutables.\n\n  • Sintaxis: hexdump -C <nombre_de_archivo>\n  • Opción -C: Muestra el volcado canónico en formato hexadecimal y texto ASCII.|ver"
+  "view <nombre_de_archivo.txt>|abre en Vim en modo solo lectura|view archivo_protegido.conf|Abre un archivo con el editor Vim bloqueando cambios accidentales.\n\n  • Sintaxis: view <nombre_de_archivo.txt>\n  • Ventaja: Permite usar la potencia de búsqueda y navegación de Vim sin riesgo de modificar el archivo.|ver"
 
   # ---------------------------------------------------------------------------
   # CATEGORÍA: buscar
   # ---------------------------------------------------------------------------
-  "grep X F|busca texto en archivo|grep error log.txt|Busca coincidencias de un texto en un archivo.\n\n  • Sintaxis: grep <texto> <archivo>\n  • Argumentos:\n    - X : Texto o palabra a buscar.\n    - F : Archivo donde se buscará.|buscar"
-  "grep -i X F|sin distinguir mayús|grep -i error log.txt|Busca texto ignorando mayúsculas y minúsculas.\n\n  • Sintaxis: grep -i <texto> <archivo>\n  • Opciones / Flags:\n    - -i : (ignore-case) No distingue mayúsculas/minúsculas (encuentra 'Error', 'ERROR', 'error').\n  • Argumentos:\n    - X : Texto a buscar.\n    - F : Archivo objetivo.|buscar"
-  "grep -r X .|busca en todo|grep -r TODO .|Busca texto recursivamente en todos los archivos de un directorio.\n\n  • Sintaxis: grep -r <texto> <directorio>\n  • Opciones / Flags:\n    - -r : (recursive) Revisa subdirectorios.\n  • Argumentos:\n    - X : Texto a buscar.\n    - . : Directorio inicial ('.' es el actual).|buscar"
-  "grep -n X F|con nº de línea|grep -n error log.txt|Muestra el número de línea exacto de cada coincidencia.\n\n  • Sintaxis: grep -n <texto> <archivo>\n  • Opciones / Flags:\n    - -n : Muestra número de línea.\n  • Argumentos:\n    - X : Texto a buscar.\n    - F : Archivo objetivo.|buscar"
-  "grep -v X F|lo que NO tiene|grep -v error log.txt|Filtra e imprime las líneas que NO contienen el texto.\n\n  • Sintaxis: grep -v <texto> <archivo>\n  • Opciones / Flags:\n    - -v : Invierte la búsqueda.\n  • Argumentos:\n    - X : Texto a excluir.\n    - F : Archivo a analizar.|buscar"
-  "grep -c X F|solo cuenta|grep -c error log.txt|Muestra la cantidad de líneas coincidentes sin imprimir el contenido.\n\n  • Sintaxis: grep -c <texto> <archivo>\n  • Opciones / Flags:\n    - -c : Cuenta coincidencias.\n  • Argumentos:\n    - X : Texto a contar.\n    - F : Archivo objetivo.|buscar"
-  "find . -name X|busca archivos|find . -name '*.txt'|Busca archivos o carpetas por nombre.\n\n  • Sintaxis: find <directorio> -name <patrón>\n  • Opciones / Flags:\n    - -name : Patrón de nombre (admite comodines como '*.txt').\n  • Argumentos:\n    - . : Directorio de inicio.\n    - X : Nombre o patrón buscado.|buscar"
-  "find . -type f|solo archivos|find . -type f|Filtra la búsqueda para devolver solo archivos.\n\n  • Sintaxis: find <directorio> -type f\n  • Opciones / Flags:\n    - -type f : Solo archivos regulares.\n  • Argumentos:\n    - . : Directorio de inicio.|buscar"
-  "find . -type d|solo carpetas|find . -type d|Filtra la búsqueda para devolver solo carpetas.\n\n  • Sintaxis: find <directorio> -type d\n  • Opciones / Flags:\n    - -type d : Solo directorios/carpetas.\n  • Argumentos:\n    - . : Directorio de inicio.|buscar"
-  "find . -size +10M|por tamaño|find . -size +10M|Busca elementos filtrados por su tamaño en disco.\n\n  • Sintaxis: find <directorio> -size <criterio>\n  • Opciones / Flags:\n    - -size : Tamaño (usar + o - y k/M/G).\n  • Argumentos:\n    - . : Directorio de inicio.\n    - +10M : Mayores a 10 Megabytes.|buscar"
-  "find . -mtime -7|últimos 7 días|find . -mtime -7|Busca elementos modificados recientemente por días.\n\n  • Sintaxis: find <directorio> -mtime <días>\n  • Opciones / Flags:\n    - -mtime : Días desde modificación (-7 = últimos 7 días).\n  • Argumentos:\n    - . : Directorio de inicio.|buscar"
+  "grep <texto_a_buscar> <archivo.txt>|busca una palabra en un archivo|grep error log.txt|Busca e imprime todas las líneas que contengan la palabra o texto especificado.\n\n  • Sintaxis: grep <texto_a_buscar> <nombre_de_archivo.txt>\n  • Ejemplos:\n    - grep \"Falló la conexión\" app.log  → Usa comillas si el texto tiene espacios.|buscar"
+  "grep -i <texto> <archivo.txt>|busca ignorando mayúsculas|grep -i error log.txt|Busca coincidencias sin hacer distinción entre mayúsculas y minúsculas.\n\n  • Sintaxis: grep -i <texto_a_buscar> <nombre_de_archivo.txt>\n  • Ventaja: Encuentra 'ERROR', 'Error', 'error' o 'eRrOr' indistintamente.|buscar"
+  "grep -r <texto> <carpeta>|busca en todos los archivos del dir|grep -r TODO ./src|Busca la palabra indicada en todos los archivos de la carpeta y sus subcarpetas.\n\n  • Sintaxis: grep -r <texto_a_buscar> <directorio>\n  • Opciones combinadas muy útiles:\n    - grep -rn \"mi_funcion\" .  → Busca recursivamente y muestra el número de línea de cada hallazgo.|buscar"
+  "grep -n <texto> <archivo.txt>|muestra el número de línea|grep -n ERROR log.txt|Antepone el número de línea exacto a cada coincidencia encontrada.\n\n  • Sintaxis: grep -n <texto_a_buscar> <nombre_de_archivo.txt>\n  • Utilidad: Te ayuda a ubicar rápidamente en qué línea de código ocurrió un suceso.|buscar"
+  "grep -v <texto> <archivo.txt>|filtra e imprime lo que NO coincide|grep -v INFO sistema.log|Muestra únicamente las líneas que NO contengan la palabra especificada.\n\n  • Sintaxis: grep -v <texto_a_excluir> <nombre_de_archivo.txt>\n  • Uso común: Filtrar mensajes basura o informativos para conservar solo advertencias o fallos.|buscar"
+  "grep -c <texto> <archivo.txt>|cuenta cuántas líneas coinciden|grep -c WARNING app.log|Muestra el conteo numérico total de líneas que coinciden sin imprimir el texto.\n\n  • Sintaxis: grep -c <texto_a_buscar> <nombre_de_archivo.txt>|buscar"
+  "grep -w <palabra> <archivo.txt>|busca únicamente la palabra exacta|grep -w \"fin\" notas.txt|Evita coincidencias parciales (ej: 'fin' no coincidirá con 'final' ni 'definir').\n\n  • Sintaxis: grep -w <palabra_exacta> <nombre_de_archivo.txt>|buscar"
+  "grep -E '<regex>' <archivo.txt>|busca usando expresiones regulares|grep -E '[0-9]{3}' datos.txt|Permite utilizar expresiones regulares avanzadas POSIX ERE (patrones complejos).\n\n  • Sintaxis: grep -E '<patron_expresion_regular>' <nombre_de_archivo.txt>\n  • Ejemplo:\n    - grep -E \"error|warning\" log.txt  → Busca líneas que contengan 'error' O 'warning'.|buscar"
+  "find <dir> -name <patron>|busca archivos por nombre|find . -name \"*.txt\"|Realiza una búsqueda profunda en el sistema de archivos según el nombre especificado.\n\n  • Sintaxis: find <directorio_inicio> -name \"<patron_buscado>\"\n  • Opciones clave:\n    - find . -iname \"*.JPG\"  → Ignora mayúsculas/minúsculas (-iname).\n  • Tip: Encierra siempre los patrones con comodines (*) entre comillas para evitar fallos.|buscar"
+  "find <dir> -type f|busca únicamente archivos|find ./documentos -type f|Filtra la búsqueda para devolver exclusivamente archivos, ignorando carpetas.\n\n  • Sintaxis: find <directorio_inicio> -type f\n  • Combinaciones:\n    - find . -type f -name \"*.py\"  → Busca solo archivos que terminen en .py.|buscar"
+  "find <dir> -type d|busca únicamente carpetas|find . -type d|Filtra la búsqueda para mostrar exclusivamente carpetas o directorios.\n\n  • Sintaxis: find <directorio_inicio> -type d|buscar"
+  "find <dir> -size +<peso>|busca archivos por peso/tamaño|find . -size +50M|Busca elementos filtrados por su peso en disco (ej: mayores a 50 MegaBytes).\n\n  • Sintaxis: find <directorio_inicio> -size [+ o -]<tamaño>[k|M|G]\n  • Ejemplos:\n    - find /var/log -size +100M  → Busca archivos de más de 100MB.\n    - find . -size -10k         → Busca archivos menores a 10KB.|buscar"
+  "find <dir> -mtime -<dias>|busca modificados recientemente|find . -mtime -7|Encuentra archivos modificados en los últimos N días especificados.\n\n  • Sintaxis: find <directorio_inicio> -mtime -<numero_de_dias>\n  • Ejemplos:\n    - find . -mtime -1  → Archivos modificados en las últimas 24 horas.\n    - find . -mtime +30 → Archivos modificados hace más de 30 días.|buscar"
+  "find <dir> -empty|busca archivos o carpetas vacías|find . -empty|Ubica de inmediato todos los archivos o carpetas que tienen 0 bytes de contenido.\n\n  • Sintaxis: find <directorio_inicio> -empty\n  • Qué más puedes hacer:\n    - find . -type f -empty -delete  → Busca y elimina automáticamente archivos vacíos.|buscar"
+  "which <comando>|muestra la ruta del ejecutable|which python3|Localiza e imprime la ruta absoluta del binario ejecutable que usa el sistema.\n\n  • Sintaxis: which <nombre_de_comando>\n  • Ejemplo: which node → Muestra por ejemplo '/usr/bin/node'.|buscar"
+  "whereis <comando>|ubica ejecutable, código y manual|whereis bash|Muestra la ubicación del binario, las fuentes y las páginas de manual de un programa.\n\n  • Sintaxis: whereis <nombre_de_comando>|buscar"
+  "locate <archivo>|búsqueda rápida en el índice|locate nginx.conf|Realiza una búsqueda ultra rápida consultando la base de datos de archivos indexados.\n\n  • Sintaxis: locate <nombre_de_archivo>\n  • Tip: Si recién creaste un archivo ejecuta antes 'sudo updatedb' para actualizar el índice.|buscar"
+  "fd <nombre>|alternativa rápida a find|fd notas|Busca archivos de forma interactiva, coloreada y mucho más rápida que el comando find tradicional.\n\n  • Sintaxis: fd <nombre_o_patron>\n  • Nota: Requiere tener instalada la herramienta 'fd-find'.|buscar"
 
   # ---------------------------------------------------------------------------
   # CATEGORÍA: texto
   # ---------------------------------------------------------------------------
-  "echo texto|imprime texto|echo hola|Imprime una cadena de texto en pantalla.\n\n  • Sintaxis: echo <texto>\n  • Argumentos:\n    - texto : El texto o palabras a imprimir.|texto"
-  "echo VAR|valor de variable|echo \$USER|Muestra el valor contenido en una variable de entorno.\n\n  • Sintaxis: echo \$<VARIABLE>\n  • Argumentos:\n    - \$VAR : Variable a consultar (ej: \$USER, \$HOME, \$PATH).|texto"
-  "echo X > F|guarda en archivo|echo hola > notas.txt|Escribe texto en un archivo (sobrescribiendo todo).\n\n  • Sintaxis: echo <texto> > <archivo>\n  • Operadores:\n    - > : Sobrescribe el archivo.\n  • Argumentos:\n    - X : Texto a escribir.\n    - F : Archivo destino.|texto"
-  "echo X >> F|añade al final|echo adios >> notas.txt|Añade texto al final de un archivo (sin borrar nada).\n\n  • Sintaxis: echo <texto> >> <archivo>\n  • Operadores:\n    - >> : Concatena al final del archivo.\n  • Argumentos:\n    - X : Texto a añadir.\n    - F : Archivo destino.|texto"
-  "cmd1 | cmd2|tubería|ls | grep txt|Conecta la salida de un comando con la entrada de otro.\n\n  • Sintaxis: <comando1> | <comando2>\n  • Operadores:\n    - | : Tubería (pipe). La salida de cmd1 pasa a cmd2.\n  • Ejemplo: ls | grep txt|texto"
-  "cmd < F|entrada desde archivo|sort < numeros.txt|Redirecciona un archivo para que sea la entrada de un comando.\n\n  • Sintaxis: <comando> < <archivo>\n  • Operadores:\n    - < : Entrada desde archivo.\n  • Argumentos:\n    - F : Archivo de entrada.|texto"
+  "echo <mensaje>|imprime un texto en la consola|echo \"Hola Mundo\"|Muestra una cadena de texto o el contenido de variables en la salida estándar de la terminal.\n\n  • Sintaxis: echo \"<mensaje_a_imprimir>\"\n  • Opciones útiles:\n    - echo -e \"Línea 1\nLínea 2\"  → Habilita la interpretación de saltos de línea (\n) y tabulaciones (\t).|texto"
+  "echo \$<VARIABLE>|muestra el valor de una variable|echo \$HOME|Muestra el contenido de variables de entorno o del sistema.\n\n  • Sintaxis: echo \$<NOMBRE_DE_VARIABLE>\n  • Ejemplos útiles:\n    - echo \$USER  → Muestra el nombre de tu usuario actual.\n    - echo \$PATH  → Muestra las rutas de ejecución de comandos.|texto"
+  "echo <texto> > <archivo.txt>|guarda texto sobrescribiendo el archivo|echo \"nuevo texto\" > notas.txt|Escribe texto en un archivo. Si el archivo ya existía, borra todo su contenido previo.\n\n  • Sintaxis: echo \"<texto>\" > <nombre_de_archivo.txt>\n  • CUIDADO: El operador '>' reemplaza por completo el contenido existente.|texto"
+  "echo <texto> >> <archivo.txt>|añade texto al final del archivo|echo \"nueva linea\" >> log.txt|Añade o concatena texto al final de un archivo sin modificar lo que ya tenía dentro.\n\n  • Sintaxis: echo \"<texto>\" >> <nombre_de_archivo.txt>\n  • Operador '>>': Agrega al final (append). Si el archivo no existe, lo crea automáticamente.|texto"
+  "cmd1 | cmd2|tubería: envía salida de cmd1 a cmd2|ls -la | grep \".txt\"|Conecta y canaliza la salida de un comando para que sea procesada como entrada de otro.\n\n  • Sintaxis: <comando_salida> | <comando_procesador>\n  • Ejemplos clásicos:\n    - cat usuarios.txt | sort      → Lee el archivo y ordena su texto alfabéticamente.\n    - ps aux | grep \"firefox\"      → Obtiene los procesos y filtra solo los de Firefox.|texto"
+  "cmd < <archivo.txt>|envía contenido de archivo como entrada|sort < lista.txt|Lee el contenido de un archivo y lo envía directamente a la entrada de un comando.\n\n  • Sintaxis: <comando> < <nombre_de_archivo.txt>|texto"
+  "sort <archivo.txt>|ordena alfabéticamente las líneas|sort nombres.txt|Lee las líneas de un archivo y las imprime en pantalla ordenadas alfabéticamente.\n\n  • Sintaxis: sort <nombre_de_archivo.txt>\n  • Opciones clave:\n    - sort -r lista.txt  → Ordena en sentido inverso (Z a A).|texto"
+  "sort -n <archivo.txt>|ordena de forma numérica correcta|sort -n precios.txt|Ordena las líneas interpretando los valores como números reales (evita que 10 vaya antes que 2).\n\n  • Sintaxis: sort -n <nombre_de_archivo.txt>|texto"
+  "sort -u <archivo.txt>|ordena y elimina líneas duplicadas|sort -u correos.txt|Ordena el texto del archivo y elimina de forma automática todas las líneas repetidas.\n\n  • Sintaxis: sort -u <nombre_de_archivo.txt>|texto"
+  "uniq -c <archivo.txt>|cuenta líneas repetidas consecutivas|sort lista.txt | uniq -c|Cuenta la cantidad de repeticiones de cada línea contigua presente en el texto.\n\n  • Sintaxis: uniq -c <nombre_de_archivo.txt>\n  • TIP CLAVE: 'uniq' solo detecta líneas duplicadas consecutivas; por eso siempre se debe usar 'sort' antes ('sort archivo | uniq -c').|texto"
+  "cut -d',' -f1 <archivo.csv>|extrae columnas especificando delimitador|cut -d',' -f1 datos.csv|Corta cada línea de texto y extrae columnas específicas indicando el separador.\n\n  • Sintaxis: cut -d'<caracter_delimitador>' -f<numero_columna> <archivo>\n  • Ejemplos:\n    - cut -d':' -f1 /etc/passwd  → Extrae solo la primera columna (usuarios) del sistema.|texto"
+  "tr '<origen>' '<destino>'|reemplaza o convierte caracteres|cat texto.txt | tr 'a-z' 'A-Z'|Transforma o sustituye conjuntos de caracteres (ej: convierte minúsculas a mayúsculas).\n\n  • Sintaxis: tr '<origen>' '<destino>'\n  • Qué más puedes hacer:\n    - tr -d '\r' < archivo.txt > limpio.txt  → Elimina saltos de línea estilo Windows (\r).|texto"
+  "sed 's/<buscar>/<reemplazar>/g' <archivo>|reemplaza texto automáticamente|sed 's/localhost/127.0.0.1/g' config.txt|Potente editor de flujo para buscar y reemplazar patrones de texto en todo el archivo.\n\n  • Sintaxis: sed 's/<texto_buscar>/<nuevo_texto>/g' <nombre_de_archivo.txt>\n  • Opciones:\n    - sed -i 's/viejo/nuevo/g' archivo.txt  → Aplica los cambios directamente en el archivo original (-i = in place).|texto"
+  "awk '{print \$1}' <archivo.txt>|procesa y filtra datos por columnas|awk '{print \$1, \$3}' tabla.txt|Lenguaje de procesamiento de datos por columnas y formateo de texto estructurado.\n\n  • Sintaxis: awk '{print \$<columna1>, \$<columna2>}' <nombre_de_archivo.txt>\n  • Ejemplo:\n    - ls -l | awk '{print \$9, \$5}'  → Imprime solo el nombre del archivo y su tamaño en bytes.|texto"
+  "tee <archivo.txt>|guarda en archivo y muestra en pantalla|ls -la | tee reporte.txt|Recibe texto de una tubería, lo guarda en un archivo y simultáneamente lo imprime en pantalla.\n\n  • Sintaxis: <comando_salida> | tee <nombre_de_archivo.txt>\n  • Opción de agregar:\n    - comando | tee -a registro.txt  → Añade al final del archivo sin sobrescribir (-a = append).|texto"
+  "rev <archivo.txt>|invierte el orden de los caracteres|rev palabras.txt|Invierte de atrás hacia adelante los caracteres de cada línea de texto.\n\n  • Sintaxis: rev <nombre_de_archivo.txt>|texto"
 
   # ---------------------------------------------------------------------------
   # CATEGORÍA: sistema
   # ---------------------------------------------------------------------------
-  "sudo cmd|como administrador|sudo apt update|Ejecuta un comando con permisos de administrador (root).\n\n  • Sintaxis: sudo <comando>\n  • Argumentos:\n    - cmd : Comando a ejecutar como root.|sistema"
-  "sudo -i|shell como root|sudo -i|Inicia una terminal completa como administrador.\n\n  • Sintaxis: sudo -i\n  • Opciones / Flags:\n    - -i : Inicia sesión como superusuario (escribe 'exit' para salir).|sistema"
-  "history|ver historial|history|Muestra la lista numerada de comandos ejecutados anteriormente.\n\n  • Sintaxis: history\n  • Argumentos: No requiere argumentos.|sistema"
-  "history -d N|borra del historial|history -d 42|Elimina una línea específica del historial por su número.\n\n  • Sintaxis: history -d <número>\n  • Opciones / Flags:\n    - -d : Elimina la posición indicada.\n  • Argumentos:\n    - N : Número de línea del comando.|sistema"
-  "history -c|limpia el historial|history -c|Borra todo el historial guardado en la sesión actual.\n\n  • Sintaxis: history -c\n  • Opciones / Flags:\n    - -c : Vacía el historial de la sesión.|sistema"
-  "chmod +x F|hacer ejecutable|chmod +x script.sh|Añade permiso de ejecución a un archivo.\n\n  • Sintaxis: chmod +x <archivo>\n  • Parámetros:\n    - +x : Otorga permiso de ejecución.\n  • Argumentos:\n    - F : Archivo a modificar.|sistema"
-  "chmod 755 F|permisos estándar|chmod 755 script.sh|Establece permisos numéricos octales (dueño todo, otros lectura/ejecución).\n\n  • Sintaxis: chmod <modo_octal> <archivo>\n  • Desglose:\n    - 7 : lectura, escritura y ejecución para el dueño.\n    - 5 : lectura y ejecución para grupo y otros.\n  • Argumentos:\n    - F : Archivo objetivo.|sistema"
-  "df -h|espacio en disco|df -h|Muestra el espacio en disco de las particiones.\n\n  • Sintaxis: df -h\n  • Opciones / Flags:\n    - -h : (human-readable) Muestra el espacio en MB/GB.|sistema"
-  "du -sh X|tamaño de carpeta|du -sh Documentos|Muestra el tamaño total acumulado de una carpeta o archivo.\n\n  • Sintaxis: du -sh <carpeta>\n  • Opciones / Flags:\n    - -s : Resumen del total de la carpeta.\n    - -h : Muestra en formato legible (MB/GB).\n  • Argumentos:\n    - X : Carpeta a consultar.|sistema"
-  "free -h|memoria RAM|free -h|Muestra el estado de la memoria RAM y SWAP.\n\n  • Sintaxis: free -h\n  • Opciones / Flags:\n    - -h : Muestra valores en formato legible (MB/GB).|sistema"
-  "ps aux|procesos activos|ps aux|Muestra un listado de todos los procesos en ejecución.\n\n  • Sintaxis: ps aux\n  • Opciones / Flags:\n    - a : Procesos de todos los usuarios.\n    - u : Muestra usuario y detalles.\n    - x : Procesos sin terminal.|sistema"
-  "ps aux | grep X|busca proceso|ps aux | grep firefox|Busca un proceso específico por su nombre.\n\n  • Sintaxis: ps aux | grep <nombre>\n  • Argumentos:\n    - X : Nombre del proceso a buscar.|sistema"
-  "top|monitor en vivo|top|Monitor interactivo de procesos y consumo de CPU/RAM en tiempo real.\n\n  • Sintaxis: top\n  • Teclas: 'q' para salir, 'M' ordenar por RAM, 'P' por CPU.|sistema"
-  "kill -9 N|matar proceso|kill -9 1234|Fuerza la terminación inmediata de un proceso.\n\n  • Sintaxis: kill -9 <PID>\n  • Opciones / Flags:\n    - -9 : Terminación forzada inmediata (SIGKILL).\n  • Argumentos:\n    - N : PID del proceso.|sistema"
-  "uptime|carga y tiempo|uptime|Muestra tiempo encendido y carga promedio del sistema.\n\n  • Sintaxis: uptime|sistema"
+  "sudo <comando>|ejecuta un comando como superusuario|sudo apt update|Ejecuta una instrucción individual otorgando privilegios temporales de superusuario (root).\n\n  • Sintaxis: sudo <comando_a_ejecutar>\n  • Solicitará la contraseña de tu usuario en la terminal para confirmar los permisos.|sistema"
+  "sudo -i|abre consola continua como usuario root|sudo -i|Inicia una sesión de terminal interactiva continua como superusuario root.\n\n  • Sintaxis: sudo -i\n  • ADVERTENCIA: Cualquier comando ejecutado en modo root tiene control absoluto del sistema.\n  • Para salir del modo root escribe 'exit' o pulsa Ctrl+D.|sistema"
+  "history|muestra historial de comandos pasados|history|Muestra la lista numerada de todas las instrucciones ejecutadas previamente en la terminal.\n\n  • Sintaxis: history\n  • Qué más puedes hacer:\n    - history | grep \"git\"  → Busca comandos pasados que contengan la palabra 'git'.|sistema"
+  "history -d <linea>|borra una entrada del historial|history -d 150|Elimina la instrucción ubicada en el número de posición indicado dentro del historial.\n\n  • Sintaxis: history -d <numero_de_linea>|sistema"
+  "history -c|limpia todo el historial de la sesión|history -c|Borra por completo el registro de comandos guardado en la memoria de la sesión actual.\n\n  • Sintaxis: history -c|sistema"
+  "chmod +x <script.sh>|da permiso de ejecución a un archivo|chmod +x mi_script.sh|Añade permisos de ejecución a un script o binario para poder correrlo con './script.sh'.\n\n  • Sintaxis: chmod +x <nombre_de_archivo.sh>|sistema"
+  "chmod 755 <script.sh>|asigna permisos estándar octales|chmod 755 script.sh|Aplica permisos numéricos: Propietario (Lectura/Escritura/Ejecución), Otros (Lectura/Ejecución).\n\n  • Sintaxis: chmod <codigo_octal> <nombre_de_archivo>\n  • Códigos octales comunes:\n    - 755 : Estándar para scripts y carpetas públicas.\n    - 600 : Solo lectura/escritura para el dueño (ideal para claves privadas o .env).\n    - 777 : Permisos totales a todos los usuarios (¡Peligro en seguridad!).|sistema"
+  "df -h|muestra espacio libre en discos|df -h|Informa la capacidad total, espacio usado y disponible en todos los discos y particiones montadas.\n\n  • Sintaxis: df -h\n  • Opción -h: Muestra valores en formatos legibles (Megabytes GB, Gigabytes GB).|sistema"
+  "du -sh <carpeta>|calcula el tamaño ocupado por una carpeta|du -sh /var/log|Muestra la cantidad total de espacio en disco que consume una carpeta especificada.\n\n  • Sintaxis: du -sh <nombre_de_carpeta_o_archivo>\n  • Desglose de banderas:\n    - -s : Muestra solo el resumen del total.\n    - -h : Formato legible para humanos (MB/GB).|sistema"
+  "free -h|muestra la memoria RAM y SWAP libre|free -h|Desglosa el consumo actual, memoria libre, almacenamiento en caché y swap del sistema.\n\n  • Sintaxis: free -h\n  • Útil para diagnosticar cuando una computadora o servidor está lento por falta de RAM.|sistema"
+  "ps aux|lista todos los procesos del sistema|ps aux|Genera un reporte detallado de cada proceso corriendo en el sistema con su PID, CPU y memoria.\n\n  • Sintaxis: ps aux\n  • Qué significan los campos principales:\n    - USER : Usuario dueño del proceso.\n    - PID  : Identificador único del proceso (Process ID).\n    - %CPU / %MEM : Porcentaje de recursos consumidos.|sistema"
+  "ps aux | grep <proceso>|busca un proceso específico activo|ps aux | grep firefox|Combina 'ps aux' con 'grep' para encontrar el ID (PID) y detalles de un programa en ejecución.\n\n  • Sintaxis: ps aux | grep <nombre_del_programa>|sistema"
+  "top|monitor interactivo de recursos en tiempo real|top|Abre una pantalla interactiva con el uso continuo de CPU, memoria RAM y procesos del sistema.\n\n  • Sintaxis: top\n  • Controles interactivos dentro de top:\n    - M : Ordenar procesos por uso de memoria RAM.\n    - P : Ordenar procesos por uso de procesador CPU.\n    - q : Salir del monitor.|sistema"
+  "htop|monitor interactivo avanzado a colores|htop|Versión interactiva mejorada de top con soporte para ratón, barras de colores y filtrado fácil.\n\n  • Sintaxis: htop\n  • Requiere tener instalada la herramienta 'htop' en el sistema.|sistema"
+  "kill -9 <pid>|fuerza la terminación de un proceso|kill -9 4821|Envía la señal estricta SIGKILL (-9) para cerrar de inmediato un proceso bloqueado usando su PID.\n\n  • Sintaxis: kill -9 <numero_PID_del_proceso>\n  • TIP: Obtén el número PID usando primero el comando 'ps aux | grep <nombre>'.|sistema"
+  "killall <nombre>|cierra todos los procesos por su nombre|killall chrome|Finaliza al instante todos los procesos activos que coincidan exactamente con el nombre dado.\n\n  • Sintaxis: killall <nombre_del_proceso>|sistema"
+  "uptime|muestra tiempo encendido y carga media|uptime|Informa cuántas horas/días lleva encendido el sistema y el nivel promedio de carga de trabajo.\n\n  • Sintaxis: uptime|sistema"
+  "uname -a|muestra datos del kernel y arquitectura|uname -a|Imprime detalles completos del sistema operativo, versión del kernel Linux y arquitectura de procesador.\n\n  • Sintaxis: uname -a|sistema"
+  "whoami|imprime el nombre del usuario activo|whoami|Muestra en pantalla el nombre del usuario con el que iniciaste sesión actualmente.\n\n  • Sintaxis: whoami|sistema"
+  "ping <servidor_o_ip>|prueba conectividad de red con un host|ping google.com|Envía paquetes de prueba a un dominio o dirección IP para medir latencia y comprobar si hay internet.\n\n  • Sintaxis: ping <servidor_o_ip>\n  • Para detener el envío continuo de paquetes pulsa la combinación Ctrl+C.|sistema"
 
   # ---------------------------------------------------------------------------
   # CATEGORÍA: atajos
   # ---------------------------------------------------------------------------
-  "Tab|autocompletar|Tab|Autocompleta nombres de comandos, archivos o carpetas.\n\n  • Uso: Escribe el inicio de la palabra y pulsa Tab.|atajos"
-  "Tab Tab|ver opciones|Tab Tab|Muestra todas las opciones posibles cuando hay varias coincidencias.\n\n  • Uso: Pulsa Tab dos veces seguidas.|atajos"
-  "Ctrl+R|buscar historial|Ctrl+R|Búsqueda interactiva en el historial de comandos.\n\n  • Uso: Pulsa Ctrl+R y escribe una palabra para buscar comandos antiguos.|atajos"
-  "Ctrl+C|cancelar comando|Ctrl+C|Interrumpe y cancela el comando ejecutándose actualmente.|atajos"
-  "Ctrl+L|limpiar pantalla|Ctrl+L|Limpia la terminal (igual que el comando clear).\n\n  • Uso: Pulsa Ctrl+L.|atajos"
-  "Ctrl+U|borrar la línea|Ctrl+U|Borra el texto desde el cursor hasta el inicio de la línea.|atajos"
-  "Ctrl+W|borrar palabra|Ctrl+W|Borra la última palabra antes del cursor.|atajos"
-  "Ctrl+A|inicio de línea|Ctrl+A|Mueve el cursor al principio de la línea.|atajos"
-  "Ctrl+E|fin de línea|Ctrl+E|Mueve el cursor al final de la línea.|atajos"
-  "Ctrl+Shift+C|copiar|Ctrl+Shift+C|Copia el texto seleccionado en la terminal.|atajos"
-  "Ctrl+Shift+V|pegar|Ctrl+Shift+V|Pega el texto seleccionado en la terminal.|atajos"
-  "Flecha arriba|comandos previos|Flecha arriba|Navega hacia atrás en el historial de comandos.|atajos"
-  "!!|repetir el último|!!|Repite el último comando ejecutado.\n\n  • Ejemplo típico: sudo !!|atajos"
-  "!n|repetir el número n|!42|Ejecuta el comando número 'n' del historial.\n\n  • Sintaxis: !<número>|atajos"
-  "Ctrl+D|cerrar sesión|Ctrl+D|Cierra la sesión actual de la terminal.|atajos"
+  "Tab|autocompleta comandos, variables y rutas|Tab|Escribe el inicio de un comando o nombre de archivo y pulsa Tab para completarlo de forma automática.|atajos"
+  "Tab Tab|muestra opciones de autocompletado|Tab Tab|Pulsa la tecla Tab dos veces seguidas cuando existan múltiples archivos o comandos parecidos.|atajos"
+  "Ctrl+R|búsqueda interactiva en el historial|Ctrl+R|Abre un buscador interactivo. Empieza a escribir cualquier palabra de un comando antiguo para encontrarlo.|atajos"
+  "Ctrl+C|cancela la ejecución del comando actual|Ctrl+C|Detiene inmediatamente cualquier programa, script o proceso en ejecución en la pantalla de la terminal.|atajos"
+  "Ctrl+L|limpia por completo la pantalla de la consola|Ctrl+L|Limpia todo el texto visible en la pantalla (hace exactamente lo mismo que escribir 'clear').|atajos"
+  "Ctrl+U|borra texto desde el cursor al inicio|Ctrl+U|Corta e interactúa borrando todo lo que hayas escrito desde la posición actual del cursor hacia la izquierda.|atajos"
+  "Ctrl+K|borra texto desde el cursor al final|Ctrl+K|Corta e interactúa borrando todo lo escrito desde la posición del cursor hacia la derecha.|atajos"
+  "Ctrl+Y|pega el último fragmento de texto borrado|Ctrl+Y|Restaura o pega el último bloque de texto que hayas borrado recientemente usando Ctrl+U o Ctrl+K.|atajos"
+  "Ctrl+W|borra la palabra anterior al cursor|Ctrl+W|Borra rápidamente una sola palabra hacia atrás desde donde esté ubicado el cursor.|atajos"
+  "Ctrl+A|mueve el cursor al principio de la línea|Ctrl+A|Desplaza instantáneamente el cursor de edición al inicio de la línea sin tener que borrar.|atajos"
+  "Ctrl+E|mueve el cursor al final de la línea|Ctrl+E|Desplaza instantáneamente el cursor de edición al extremo derecho final de la línea.|atajos"
+  "Alt+B|desplaza el cursor una palabra atrás|Alt+B|Navega saltando palabra por palabra hacia la izquierda en la línea de comandos.|atajos"
+  "Alt+F|desplaza el cursor una palabra adelante|Alt+F|Navega saltando palabra por palabra hacia la derecha en la línea de comandos.|atajos"
+  "Ctrl+Shift+C|copia el texto seleccionado en terminal|Ctrl+Shift+C|Copia al portapapeles el fragmento de texto que hayas seleccionado con el ratón.|atajos"
+  "Ctrl+Shift+V|pega texto del portapapeles en terminal|Ctrl+Shift+V|Pega en la línea de comandos el texto o código que tengas copiado en tu portapapeles.|atajos"
+  "Flecha arriba|navega hacia atrás en el historial|Flecha arriba|Recorre secuencialmente las instrucciones que ejecutaste en el pasado para no tener que reescribirlas.|atajos"
+  "!!|repite el último comando ejecutado|!!|Re-ejecuta automáticamente la última instrucción (muy útil para anteponer sudo: 'sudo !!').|atajos"
+  "!n|ejecuta comando número 'n' del historial|!50|Busca y ejecuta directamente la instrucción ubicada en el número especificado de tu historial.|atajos"
+  "Ctrl+Z|suspende y envía proceso a segundo plano|Ctrl+Z|Pausa temporalmente la tarea en ejecución y la deja en segundo plano (puedes usar 'fg' para reanudarla).|atajos"
+  "fg|reanuda proceso suspendido en primer plano|fg|Vuelve a traer a la pantalla el programa o tarea que habías pausado previamente con Ctrl+Z.|atajos"
+  "Ctrl+D|cierra sesión o sale de la terminal|Ctrl+D|Envía el carácter de fin de archivo (EOF) cerrando la shell o la conexión SSH activa.|atajos"
 )
 
 
 # =============================================================================
-# 3. FUNCIONES
+# 3. FUNCIONES DE INTERFAZ Y NAVEGACIÓN
 # =============================================================================
 
 # -----------------------------------------------------------------------------
 # 3.1. detalle()
 # -----------------------------------------------------------------------------
-# Muestra la ficha completa de un comando: nombre, qué hace, ejemplo,
-# explicación detallada con argumentos/opciones y categoría.
-#
-# Recibe como argumento la cadena completa con los 5 campos separados por "|".
+# Muestra la ficha explicativa completa de un comando individual.
 #
 detalle() {
-    # Trocea la cadena en las 5 variables usando "|" como separador.
     IFS='|' read -r cmd desc ej exp cat <<< "$1"
 
     echo
-    echo "  ${M}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${R}"
-    echo "  ${G}Comando:${R}      ${C}$cmd${R}"
-    echo "  ${G}Categoría:${R}    $cat"
-    echo "  ${G}Qué hace:${R}     $desc"
-    echo "  ${G}Ejemplo:${R}      ${Y}$ej${R}"
-    echo "  ${M}────────────────────────────────────────────────────────────────────${R}"
-    echo "  ${G}Explicación y Uso de Argumentos/Opciones:${R}"
+    echo "  ${B}╭────────────────────────────────────────────────────────────────────╮${R}"
+    echo "  ${B}│${R} ${C}Comando:${R}      ${G}$cmd${R}"
+    echo "  ${B}│${R} ${C}Categoría:${R}    $cat"
+    echo "  ${B}│${R} ${C}Qué hace:${R}     $desc"
+    echo "  ${B}│${R} ${C}Ejemplo:${R}      ${Y}$ej${R}"
+    echo "  ${B}├────────────────────────────────────────────────────────────────────┤${R}"
+    echo "  ${B}│${R} ${C}Explicación Detallada y Sintaxis:${R}"
     echo -e "$exp" | while IFS= read -r line; do
         echo "    $line"
     done
-    echo "  ${M}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${R}"
+    echo "  ${B}╰────────────────────────────────────────────────────────────────────╯${R}"
 }
 
 
 # -----------------------------------------------------------------------------
-# 3.2. listar()
+# 3.2. mostrar_lista()
 # -----------------------------------------------------------------------------
-# Muestra los comandos de una categoría (o todos si el filtro está vacío)
-# en una lista numerada. Después deja elegir un número para ver el detalle.
+# Muestra una lista de comandos con paginación limpia de 15 elementos.
 #
-# Argumentos:
-#   $1 → nombre de la categoría a filtrar (vacío = todas)
-#   $2 → título a mostrar
-#
+mostrar_lista() {
+    local -n items=$1
+    local titulo="$2"
+    local total=${#items[@]}
+    local por_pagina=15
+    local pagina=0
+    local total_paginas=$(( (total + por_pagina - 1) / por_pagina ))
+
+    while true; do
+        clear
+        echo
+        if [ $total_paginas -gt 1 ]; then
+            echo "  ${C}$titulo${R} ${D}(Página $((pagina+1)) de $total_paginas - Total: $total)${R}"
+        else
+            echo "  ${C}$titulo${R} ${D}(Total: $total)${R}"
+        fi
+        echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
+
+        local inicio=$((pagina * por_pagina))
+        local fin=$((inicio + por_pagina))
+        if [ $fin -gt $total ]; then
+            fin=$total
+        fi
+
+        for (( i=inicio; i<fin; i++ )); do
+            IFS='|' read -r cmd desc ej exp cat <<< "${items[$i]}"
+            printf "  ${G}%2d)${R} ${C}%-40s${R} %s\n" "$((i+1))" "$cmd" "$desc"
+        done
+
+        echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
+        
+        if [ $total_paginas -gt 1 ]; then
+            echo "  ${D}[n: sig. página | p: pág. previa | 1-$total: ver detalle | Enter: menú]${R}"
+        else
+            echo "  ${D}[1-$total: ver detalle | Enter: menú de inicio]${R}"
+        fi
+        echo
+        read -p "  Selecciona una opción: " resp
+        resp_limpia=$(echo "$resp" | tr '[:upper:]' '[:lower:]' | xargs 2>/dev/null)
+
+        if [ "$resp_limpia" = "n" ] || [ "$resp_limpia" = "s" ]; then
+            if [ $((pagina + 1)) -lt $total_paginas ]; then
+                pagina=$((pagina + 1))
+            fi
+        elif [ "$resp_limpia" = "p" ] || [ "$resp_limpia" = "a" ]; then
+            if [ $pagina -gt 0 ]; then
+                pagina=$((pagina - 1))
+            fi
+        elif [[ "$resp" =~ ^[0-9]+$ ]] && [ "$resp" -ge 1 ] && [ "$resp" -le $total ]; then
+            detalle "${items[$((resp-1))]}"
+            echo
+            read -p "  Presiona Enter para continuar..."
+        elif [ -z "$resp" ] || [ "$resp_limpia" = "q" ] || [ "$resp_limpia" = "0" ] || [ "$resp_limpia" = "m" ]; then
+            break
+        fi
+    done
+}
+
+
+# -----------------------------------------------------------------------------
+# 3.3. listar()
+# -----------------------------------------------------------------------------
 listar() {
     local filtro="$1"
     local titulo="$2"
-    local entries=()      # aquí guardamos solo los que coinciden
-    local n=1             # contador visible
+    local entries=()
 
-    # Recorre todos los comandos y se queda con los de la categoría pedida.
     for entry in "${CMDS[@]}"; do
         IFS='|' read -r cmd desc ej exp cat <<< "$entry"
         if [ -z "$filtro" ] || [ "$cat" = "$filtro" ]; then
@@ -227,141 +290,93 @@ listar() {
         fi
     done
 
-    # Si no hay nada, avisa y sale.
     if [ ${#entries[@]} -eq 0 ]; then
-        echo "  No hay comandos en esta categoría."
+        echo
+        echo "  No hay comandos registrados en esta categoría."
         read -p "  Enter para volver..."
         return
     fi
 
-    # Pinta la lista numerada.
-    echo
-    echo "  ${Y}$titulo${R}"
-    echo
-    for entry in "${entries[@]}"; do
-        IFS='|' read -r cmd desc ej exp cat <<< "$entry"
-        printf "  ${G}%2d)${R} ${C}%-22s${R} %s\n" "$n" "$cmd" "$desc"
-        n=$((n+1))
-    done
-
-    # Pide un número para ver el detalle.
-    echo
-    read -p "  Número para ver detalle (Enter para volver): " num
-
-    # Valida que sea un número y que esté dentro del rango.
-    if [[ "$num" =~ ^[0-9]+$ ]] && [ "$num" -ge 1 ] && [ "$num" -le ${#entries[@]} ]; then
-        detalle "${entries[$((num-1))]}"
-        read -p "  Enter para continuar..."
-    fi
+    mostrar_lista entries "$titulo"
 }
 
 
 # -----------------------------------------------------------------------------
-# 3.3. buscar()
+# 3.4. buscar()
 # -----------------------------------------------------------------------------
-# Busca una palabra en TODOS los campos de TODOS los comandos y muestra
-# los resultados en una lista numerada.
-#
-# Argumento:
-#   $1 → palabra o expresión a buscar
-#
 buscar() {
     local q="$1"
+    local q_lower
+    q_lower=$(echo "$q" | tr '[:upper:]' '[:lower:]')
     local entries=()
-    local n=1
 
-    # Recorre todos los comandos y guarda los que contengan la palabra.
     for entry in "${CMDS[@]}"; do
         IFS='|' read -r cmd desc ej exp cat <<< "$entry"
-        if [[ "$cmd $desc $exp $cat" =~ $q ]]; then
+        local item_lower
+        item_lower=$(echo "$cmd $desc $exp $cat" | tr '[:upper:]' '[:lower:]')
+        if [[ "$item_lower" == *"$q_lower"* ]]; then
             entries+=("$entry")
         fi
     done
 
-    # Si no hay resultados, avisa.
     if [ ${#entries[@]} -eq 0 ]; then
         echo
-        echo "  No encontré nada para: $q"
-        read -p "  Enter para volver..."
+        echo "  No se encontraron resultados para: \"$q\""
+        read -p "  Presiona Enter para volver..."
         return
     fi
 
-    # Muestra los resultados.
-    echo
-    echo "  ${Y}Resultados para \"$q\":${R}"
-    echo
-    for entry in "${entries[@]}"; do
-        IFS='|' read -r cmd desc ej exp cat <<< "$entry"
-        printf "  ${G}%2d)${R} ${C}%-22s${R} %s\n" "$n" "$cmd" "$desc"
-        n=$((n+1))
-    done
-
-    # Pide un número para ver el detalle.
-    echo
-    read -p "  Número para ver detalle (Enter para volver): " num
-
-    if [[ "$num" =~ ^[0-9]+$ ]] && [ "$num" -ge 1 ] && [ "$num" -le ${#entries[@]} ]; then
-        detalle "${entries[$((num-1))]}"
-        read -p "  Enter para continuar..."
-    fi
+    mostrar_lista entries "RESULTADOS PARA \"$q\":"
 }
 
 
 # -----------------------------------------------------------------------------
-# 3.4. menu()
+# 3.5. menu()
 # -----------------------------------------------------------------------------
-# Bucle principal. Muestra el menú y espera la opción del usuario.
-# Según lo que escriba, llama a una función u otra.
-#
 menu() {
     while true; do
         clear
 
-        # ------- cabecera -------
         echo
-        echo "  ${C}╔══════════════════════════════════════════════════╗${R}"
-        echo "  ${C}║          AYUDA INTERACTIVA DE COMANDOS             ║${R}"
-        echo "  ${C}║   Escribe una opción o una palabra para buscar   ║${R}"
-        echo "  ${C}╚══════════════════════════════════════════════════╝${R}"
-        echo
-
-        # ------- categorías -------
-        echo "  ${Y}CATEGORÍAS:${R}"
-        echo "    1) Archivos y carpetas"
-        echo "    2) Ver contenido de archivos"
-        echo "    3) Buscar"
-        echo "    4) Texto y tuberías"
-        echo "    5) Sistema"
-        echo "    6) Atajos de teclado"
-        echo "    7) Ver TODO"
+        echo "  ${B}╭─────────────────────────────────────────────────╮${R}"
+        echo "  ${B}│${R}          ${C}AYUDA INTERACTIVA DE COMANDOS${R}          ${B}│${R}"
+        echo "  ${B}│${R}   ${D}Escribe una opción o una palabra para buscar${R}  ${B}│${R}"
+        echo "  ${B}╰─────────────────────────────────────────────────╯${R}"
         echo
 
-        # ------- ayuda -------
-        echo "  ${Y}BUSCAR:${R}"
+        echo "  ${C}CATEGORÍAS:${R}"
+        echo "    ${G}1)${R} Archivos y carpetas"
+        echo "    ${G}2)${R} Ver contenido de archivos"
+        echo "    ${G}3)${R} Buscar"
+        echo "    ${G}4)${R} Texto y tuberías"
+        echo "    ${G}5)${R} Sistema y procesos"
+        echo "    ${G}6)${R} Atajos de teclado"
+        echo "    ${G}7)${R} Ver TODO"
+        echo
+
+        echo "  ${C}BUSCAR:${R}"
         echo "    Escribe cualquier palabra y pulsa Enter."
-        echo "    Ejemplos: borrar, copiar, buscar, proceso, red, grep..."
+        echo "    ${D}Ejemplos: borrar, copiar, buscar, proceso, red, grep...${R}"
         echo
 
-        # ------- salir -------
-        echo "  ${Y}SALIR:${R}"
-        echo "    0 o q"
+        echo "  ${C}SALIR:${R}"
+        echo "    ${G}0${R} o ${G}q${R}"
         echo
 
-        # ------- pedir opción -------
-        read -p "  > " opcion
+        read -p "  ${C}>${R} " opcion
+        opcion_limpia=$(echo "$opcion" | tr '[:upper:]' '[:lower:]' | xargs 2>/dev/null)
 
-        # ------- decidir qué hacer -------
-        case "$opcion" in
-            1) listar "archivos" "ARCHIVOS Y CARPETAS" ;;
-            2) listar "ver"      "VER CONTENIDO DE ARCHIVOS" ;;
-            3) listar "buscar"   "BUSCAR" ;;
-            4) listar "texto"    "TEXTO Y TUBERÍAS" ;;
-            5) listar "sistema"  "SISTEMA" ;;
-            6) listar "atajos"   "ATAJOS DE TECLADO" ;;
-            7) listar ""         "TODOS LOS COMANDOS" ;;
-            0|q|Q|salir|exit) clear; exit 0 ;;
-            "") ;;                                  # Enter sin nada: no hace nada
-            *) buscar "$opcion" ;;                  # cualquier otra cosa: busca
+        case "$opcion_limpia" in
+            1|1\)*|1.*|archivos|archivos*) listar "archivos" "ARCHIVOS Y CARPETAS" ;;
+            2|2\)*|2.*|ver|ver*)           listar "ver"      "VER CONTENIDO DE ARCHIVOS" ;;
+            3|3\)*|3.*|buscar|buscar*)     listar "buscar"   "BUSCAR" ;;
+            4|4\)*|4.*|texto|texto*)       listar "texto"    "TEXTO Y TUBERÍAS" ;;
+            5|5\)*|5.*|sistema|sistema*)   listar "sistema"  "SISTEMA Y PROCESOS" ;;
+            6|6\)*|6.*|atajos|atajos*)     listar "atajos"   "ATAJOS DE TECLADO" ;;
+            7|7\)*|7.*|todo|ver\ todo)     listar ""         "TODOS LOS COMANDOS" ;;
+            0|q|salir|exit) clear; exit 0 ;;
+            "") ;;
+            *) buscar "$opcion" ;;
         esac
     done
 }
@@ -370,12 +385,9 @@ menu() {
 # =============================================================================
 # 4. PUNTO DE ENTRADA
 # =============================================================================
-# Si el script se llama con un argumento, busca directamente eso y luego
-# muestra el menú. Si no, entra directo al menú.
-#
 if [ -n "$1" ]; then
     buscar "$1"
-    read -p "  Enter para ir al menú..."
+    read -p "  Enter para ir al menú principal..."
 fi
 
 menu
