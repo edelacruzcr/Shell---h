@@ -163,6 +163,32 @@ CMDS=(
   "ping <servidor_o_ip>|prueba conectividad de red con un host|ping google.com|Envía paquetes de prueba a un dominio o dirección IP para medir latencia y comprobar si hay internet.\n\n  • Sintaxis: ping <servidor_o_ip>\n  • Para detener el envío continuo de paquetes pulsa la combinación Ctrl+C.|sistema"
 
   # ---------------------------------------------------------------------------
+  # CATEGORÍA: redes (SSH, Puertos y Firewall)
+  # ---------------------------------------------------------------------------
+  "ssh <usuario>@<servidor_ip>|conecta a servidor remoto por SSH|ssh root@192.168.1.50|Inicia una sesión de terminal remota segura cifrada hacia un servidor.\n\n  • Sintaxis: ssh <usuario>@<ip_o_dominio>\n  • Ejemplos:\n    - ssh admin@miservidor.com  → Conexión usando dominio.\n  • Tip: Para salir de la sesión SSH remota escribe 'exit' o presiona Ctrl+D.|redes"
+  "ssh -p <puerto> <usuario>@<ip>|conecta SSH con puerto personalizado|ssh -p 2222 usuario@192.168.1.100|Conecta a un servidor SSH que utiliza un puerto diferente al estándar (22).\n\n  • Sintaxis: ssh -p <numero_puerto> <usuario>@<ip>|redes"
+  "ssh-keygen -t rsa -b 4096|genera clave SSH pública y privada|ssh-keygen -t rsa -b 4096|Genera un par de llaves criptográficas para autenticarte en servidores sin usar contraseña.\n\n  • Las llaves se guardan automáticamente en la carpeta '~/.ssh/id_rsa' (privada) y '~/.ssh/id_rsa.pub' (pública).|redes"
+  "ssh-copy-id <usuario>@<ip>|copia tu clave SSH a servidor remoto|ssh-copy-id root@192.168.1.50|Transfiere tu llave pública al servidor para iniciar sesión SSH automáticamente sin contraseña.\n\n  • Sintaxis: ssh-copy-id <usuario>@<ip_servidor>|redes"
+  "scp <archivo> <usuario>@<ip>:<ruta>|copia archivo a servidor remoto por SSH|scp notas.txt usuario@192.168.1.50:/home/usuario/|Copia un archivo local hacia un servidor remoto de forma cifrada mediante SSH.\n\n  • Sintaxis: scp <archivo_local> <usuario>@<ip>:<ruta_destino>\n  • Para copiar DESDE el servidor a tu PC:\n    - scp usuario@ip:/ruta/remota.txt ./  → Trae el archivo a tu carpeta actual.|redes"
+  "scp -r <carpeta> <usuario>@<ip>:<ruta>|copia carpeta completa a servidor SSH|scp -r Proyecto/ usuario@192.168.1.50:~/|Copia una carpeta completa con todo su contenido hacia un servidor remoto.\n\n  • Sintaxis: scp -r <carpeta_local> <usuario>@<ip>:<ruta_destino>|redes"
+  "rsync -avz <origen> <usuario>@<ip>:<destino>|sincroniza archivos eficientemente|rsync -avz ./web/ usuario@192.168.1.50:/var/www/|Transfiere y sincroniza carpetas transfiriendo únicamente los archivos modificados (ahorra ancho de banda).\n\n  • Opciones:\n    - -a : Mantiene permisos, fechas y propietarios.\n    - -v : Muestra en pantalla el progreso.\n    - -z : Comprime los datos durante la transferencia.|redes"
+  "ss -tuln|ver puertos TCP/UDP abiertos|ss -tuln|Muestra todos los puertos de red activos que están escuchando conexiones en la máquina.\n\n  • Sintaxis: ss -tuln\n  • Desglose de banderas:\n    - -t : Puertos TCP.\n    - -u : Puertos UDP.\n    - -l : Solo los que están escuchando (listening).\n    - -n : Muestra números de puertos (ej: 80) en lugar de nombres de servicio.|redes"
+  "netstat -tuln|ver puertos abiertos (método clásico)|netstat -tuln|Muestra la lista de puertos y conexiones de red en el sistema.\n\n  • Sintaxis: netstat -tuln|redes"
+  "lsof -i :<puerto>|ver qué programa usa un puerto|lsof -i :8080|Muestra qué proceso o aplicación específica está ocupando un puerto de red determinado.\n\n  • Sintaxis: lsof -i :<numero_de_puerto>\n  • Ejemplo:\n    - lsof -i :3000  → Identifica qué proceso usa el puerto 3000 (servidor web, Node.js, etc).|redes"
+  "fuser -k <puerto>/tcp|cerrar/matar el proceso de un puerto|sudo fuser -k 8080/tcp|Cierra y termina de inmediato el proceso bloqueado que está utilizando un puerto TCP específico.\n\n  • Sintaxis: sudo fuser -k <puerto>/tcp\n  • Qué hace: Libera el puerto al instante cerrando la aplicación que lo tenía ocupado.|redes"
+  "sudo ufw status|ver estado del firewall UFW|sudo ufw status verbose|Muestra si el firewall UFW está activo y cuáles reglas o puertos están abiertos o bloqueados.\n\n  • Sintaxis: sudo ufw status|redes"
+  "sudo ufw enable|activar el firewall UFW|sudo ufw enable|Habilita y activa la protección del cortafuegos UFW en el sistema.|redes"
+  "sudo ufw disable|desactivar el firewall UFW|sudo ufw disable|Desactiva el firewall UFW permitiendo todo el tráfico de red.|redes"
+  "sudo ufw allow <puerto>|abrir un puerto en el firewall|sudo ufw allow 80/tcp|Añade una regla al firewall para permitir el tráfico entrante por un puerto específico.\n\n  • Ejemplos útiles:\n    - sudo ufw allow 22/tcp   → Abre puerto SSH.\n    - sudo ufw allow 443/tcp  → Abre puerto HTTPS web.|redes"
+  "sudo ufw deny <puerto>|cerrar o bloquear puerto en firewall|sudo ufw deny 3306/tcp|Bloquea de inmediato todo acceso o tráfico entrante por un puerto específico.\n\n  • Sintaxis: sudo ufw deny <numero_puerto>/tcp|redes"
+  "sudo ufw delete allow <puerto>|eliminar regla de apertura de puerto|sudo ufw delete allow 80/tcp|Elimina una regla previamente creada permitiendo limpiar la configuración del firewall.|redes"
+  "ip a|ver interfaces de red y direcciones IP|ip a|Muestra las tarjetas de red del equipo y sus direcciones IP locales asignadas.\n\n  • Sintaxis: ip a (o 'ip addr show')|redes"
+  "curl -s ifconfig.me|ver tu dirección IP pública real|curl -s ifconfig.me|Consulta un servicio externo en internet para obtener tu dirección IP pública externa.\n\n  • Sintaxis: curl -s ifconfig.me|redes"
+  "nslookup <dominio>|consultar la dirección IP de un dominio|nslookup google.com|Consulta los servidores DNS para conocer la dirección IP asociada a un nombre de dominio web.\n\n  • Sintaxis: nslookup <nombre_de_dominio>|redes"
+  "dig <dominio>|inspección DNS detallada de un dominio|dig github.com|Herramienta avanzada para consultar registros DNS (A, CNAME, MX, TXT) de un sitio web.\n\n  • Sintaxis: dig <nombre_de_dominio>|redes"
+  "traceroute <host>|trazar la ruta de red hacia un servidor|traceroute 8.8.8.8|Muestra cada uno de los saltos y ruters por los que pasan los paquetes hasta llegar al servidor destino.\n\n  • Sintaxis: traceroute <dominio_o_ip>|redes"
+
+  # ---------------------------------------------------------------------------
   # CATEGORÍA: atajos
   # ---------------------------------------------------------------------------
   "Tab|autocompleta comandos, variables y rutas|Tab|Escribe el inicio de un comando o nombre de archivo y pulsa Tab para completarlo de forma automática.|atajos"
@@ -365,13 +391,14 @@ menu() {
         echo "    ${G}3)${R} Buscar"
         echo "    ${G}4)${R} Texto y tuberías"
         echo "    ${G}5)${R} Sistema y procesos"
-        echo "    ${G}6)${R} Atajos de teclado"
-        echo "    ${G}7)${R} Ver TODO"
+        echo "    ${G}6)${R} Redes, SSH y cortafuegos"
+        echo "    ${G}7)${R} Atajos de teclado"
+        echo "    ${G}8)${R} Ver TODO"
         echo
 
         echo "  ${C}BUSCAR:${R}"
         echo "    Escribe cualquier palabra y pulsa Enter."
-        echo "    ${D}Ejemplos: borrar, copiar, buscar, proceso, red, grep...${R}"
+        echo "    ${D}Ejemplos: ssh, puerto, ufw, borrar, proceso, red, grep...${R}"
         echo
 
         echo "  ${C}SALIR:${R}"
@@ -387,8 +414,9 @@ menu() {
             3|3\)*|3.*|buscar|buscar*)     listar "buscar"   "BUSCAR" ;;
             4|4\)*|4.*|texto|texto*)       listar "texto"    "TEXTO Y TUBERÍAS" ;;
             5|5\)*|5.*|sistema|sistema*)   listar "sistema"  "SISTEMA Y PROCESOS" ;;
-            6|6\)*|6.*|atajos|atajos*)     listar "atajos"   "ATAJOS DE TECLADO" ;;
-            7|7\)*|7.*|todo|ver\ todo)     listar ""         "TODOS LOS COMANDOS" ;;
+            6|6\)*|6.*|redes|redes*|red*)  listar "redes"    "REDES, SSH Y PUERTOS" ;;
+            7|7\)*|7.*|atajos|atajos*)     listar "atajos"   "ATAJOS DE TECLADO" ;;
+            8|8\)*|8.*|todo|ver\ todo)     listar ""         "TODOS LOS COMANDOS" ;;
             0|q|salir|exit) clear; exit 0 ;;
             "") ;;
             *) buscar "$opcion" ;;

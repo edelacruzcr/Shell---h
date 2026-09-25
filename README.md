@@ -75,6 +75,7 @@ ayuda cat          # Muestra directamente detalles del comando cat
 | **Buscar** | `grep`, `find`, `which`, `whereis`, `locate`, `fd`, etc. |
 | **Texto y tuberías** | `echo`, `sort`, `uniq`, `cut`, `tr`, `sed`, `awk`, `tee`, `rev`, tuberías (`\|`), etc. |
 | **Sistema y procesos** | `sudo`, `history`, `chmod`, `df`, `du`, `free`, `ps`, `top`, `htop`, `kill`, `ping`, etc. |
+| **Redes, SSH y cortafuegos** | `ssh`, `scp`, `rsync`, `ss`, `netstat`, `lsof`, `fuser`, `ufw allow/deny`, `ip a`, `dig`, etc. |
 | **Atajos de teclado** | `Tab`, `Ctrl+R`, `Ctrl+C`, `Ctrl+L`, `Ctrl+U`, `Ctrl+K`, `Alt+B`, `Alt+F`, `!!`, etc. |
 
 ---
