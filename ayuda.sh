@@ -21,7 +21,7 @@ fi
 #
 #  AUTOR
 #  -----
-#  edelacruzcr (https://github.com/edelacruzcr/Shell---h)
+#  edelacruzcr (https://github.com/edelacruzcr/Shell-ayuda)
 #
 #  LICENCIA
 #  --------

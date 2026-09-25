@@ -25,7 +25,7 @@ Escribes una palabra, eliges un comando y te explica detalladamente qué hace, c
 Copia y pega este comando en tu terminal para instalarlo automáticamente (descarga el script, otorga permisos, configura el alias `ayuda` y recarga tu sesión):
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/edelacruzcr/Shell---h/main/ayuda.sh -o ~/.ayuda.sh && chmod +x ~/.ayuda.sh && (grep -q "alias ayuda=" ~/.bashrc 2>/dev/null || echo "alias ayuda='~/.ayuda.sh'" >> ~/.bashrc) && exec bash
+curl -sSL https://raw.githubusercontent.com/edelacruzcr/Shell-ayuda/main/ayuda.sh -o ~/.ayuda.sh && chmod +x ~/.ayuda.sh && (grep -q "alias ayuda=" ~/.bashrc 2>/dev/null || echo "alias ayuda='~/.ayuda.sh'" >> ~/.bashrc) && exec bash
 ```
 
 ¡Listo! Ya puedes escribir `ayuda` desde cualquier lugar de tu terminal.
@@ -39,14 +39,14 @@ Si ya tenías instalado `ayuda` y deseas actualizarlo a la versión más recient
 ### Opción A: Vía `curl` directo (Recomendado)
 Funciona desde cualquier carpeta de tu terminal sin necesidad de clonar nada:
 ```bash
-curl -sSL https://raw.githubusercontent.com/edelacruzcr/Shell---h/main/ayuda.sh -o ~/.ayuda.sh && chmod +x ~/.ayuda.sh && exec bash
+curl -sSL https://raw.githubusercontent.com/edelacruzcr/Shell-ayuda/main/ayuda.sh -o ~/.ayuda.sh && chmod +x ~/.ayuda.sh && exec bash
 ```
 
 ### Opción B: Si clonaste el repositorio de GitHub
 Si descargaste o clonaste el proyecto en tu máquina, entra a la carpeta antes de copiar:
 ```bash
-git clone https://github.com/edelacruzcr/Shell---h.git
-cd Shell---h
+git clone https://github.com/edelacruzcr/Shell-ayuda.git
+cd Shell-ayuda
 cp ayuda.sh ~/.ayuda.sh && chmod +x ~/.ayuda.sh && exec bash
 ```
 
