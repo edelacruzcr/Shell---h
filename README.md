@@ -10,7 +10,6 @@ Escribes una palabra, eliges un comando y te explica detalladamente qué hace, c
 
 - **Interactivo**: Menú con categorías, paginación de 15 ítems por página y búsqueda por palabra clave.
 - **Explicaciones Claras**: Cada comando incluye sintaxis con marcadores descriptivos (`<nombre_de_archivo.txt>`), ejemplos reales y recomendaciones de uso.
-- **Visualmente Amigable**: Diseño limpio en tonos cian/azul con marcos redondeados (`╭───╮`), sin colores alarmantes.
 - **Búsqueda Inteligente**: Insensible a mayúsculas/minúsculas y segura contra caracteres especiales de expresión regular.
 - **Ligero**: Es un solo script de Bash, sin dependencias externas complejas.
 - **Más de 110 Comandos**: Amplio repertorio de comandos de sistema, manipulación de archivos, texto, redes y atajos de teclado.
