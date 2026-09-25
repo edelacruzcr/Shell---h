@@ -244,6 +244,341 @@ detalle() {
 
 
 # -----------------------------------------------------------------------------
+# 3.1.0. asistente_rutas()
+# -----------------------------------------------------------------------------
+# Asistente interactivo para explorar carpetas o buscar archivos si no se conoce la ruta.
+# Devuelve la ruta seleccionada en la variable global RUTA_SELECCIONADA.
+#
+RUTA_SELECCIONADA=""
+
+asistente_rutas() {
+    RUTA_SELECCIONADA=""
+    local dir_actual="$(pwd)"
+
+    echo
+    echo "  ${C}ASISTENTE INTERACTIVO DE RUTAS Y ARCHIVOS:${R}"
+    echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
+    echo "  ${G}1)${R} Navegar por carpetas (Entrar/Subir directorio)"
+    echo "  ${G}2)${R} Buscar archivo por nombre o extensión (ej: log, .txt, config)"
+    echo "  ${G}3)${R} Ver archivos de la carpeta actual ($(pwd))"
+    echo "  ${G}0)${R} Cancelar"
+    echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
+    read -e -r -p "  Selecciona una opción (0-3): " modo_rutas
+
+    local modo_limpio
+    modo_limpio=$(echo "$modo_rutas" | xargs 2>/dev/null)
+
+    if [ "$modo_limpio" = "2" ] || [ "$modo_limpio" = "buscar" ]; then
+        echo
+        read -e -r -p "  Ingresa el nombre, palabra o extensión a buscar (ej: .txt, log): " patron
+        local patron_limpio
+        patron_limpio=$(echo "$patron" | xargs 2>/dev/null)
+        if [ -z "$patron_limpio" ]; then
+            return
+        fi
+
+        echo
+        echo "  ${C}Buscando coincidencias para \"*$patron_limpio*\" en $(pwd)...${R}"
+        local hallazgos=()
+        while IFS= read -r linea; do
+            if [ -n "$linea" ]; then
+                hallazgos+=("$linea")
+            fi
+        done < <(find . -iname "*$patron_limpio*" 2>/dev/null | grep -v "/\." | head -n 50)
+
+        if [ ${#hallazgos[@]} -eq 0 ]; then
+            echo "  ${Y}No se encontraron archivos que coincidan con \"$patron_limpio\".${R}"
+            read -r -p "  Presiona Enter para continuar..."
+            return
+        fi
+
+        echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
+        for (( idx=0; idx<${#hallazgos[@]}; idx++ )); do
+            printf "  ${G}%2d)${R} %s\n" "$((idx+1))" "${hallazgos[$idx]}"
+        done
+        echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
+        read -e -r -p "  Elige un número de archivo (1-${#hallazgos[@]}): " num_h
+        num_h=$(echo "$num_h" | xargs 2>/dev/null)
+        if [[ "$num_h" =~ ^[0-9]+$ ]] && [ "$num_h" -ge 1 ] && [ "$num_h" -le ${#hallazgos[@]} ]; then
+            RUTA_SELECCIONADA="${hallazgos[$((num_h-1))]}"
+        fi
+        return
+    elif [ "$modo_limpio" = "1" ] || [ "$modo_limpio" = "navegar" ]; then
+        local ruta_actual="$dir_actual"
+        local nav_pagina=0
+        local nav_por_pagina=25
+        while true; do
+            clear
+            echo
+
+            # Cargar todos los archivos del directorio actual sin ocultos
+            local all_items=()
+            while IFS= read -r f; do
+                [ -n "$f" ] && all_items+=("$f")
+            done < <(ls -1 "$ruta_actual" 2>/dev/null | grep -v "^\\.")
+
+            local nav_total=${#all_items[@]}
+            local nav_total_paginas=$(( (nav_total + nav_por_pagina - 1) / nav_por_pagina ))
+            [ $nav_total_paginas -lt 1 ] && nav_total_paginas=1
+            [ $nav_pagina -ge $nav_total_paginas ] && nav_pagina=$((nav_total_paginas - 1))
+
+            local nav_inicio=$((nav_pagina * nav_por_pagina))
+            local nav_fin=$((nav_inicio + nav_por_pagina))
+            [ $nav_fin -gt $nav_total ] && nav_fin=$nav_total
+
+            echo "  ${C}NAVEGADOR INTERACTIVO:${R} ${G}$ruta_actual${R}"
+            if [ $nav_total_paginas -gt 1 ]; then
+                echo "  ${D}(Pagina $((nav_pagina+1)) de $nav_total_paginas - Total: $nav_total)${R}"
+            fi
+            echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
+            echo "  ${G} 0)${R} ${D}.. Subir al directorio anterior${R}"
+            echo "  ${G} s)${R} ${Y}Usar ESTA CARPETA como argumento (busqueda recursiva)${R}"
+
+            for (( ni=nav_inicio; ni<nav_fin; ni++ )); do
+                local f="${all_items[$ni]}"
+                local display_num=$((ni + 1))
+                if [ -d "$ruta_actual/$f" ]; then
+                    printf "  ${G}%2d)${R} ${C}%s/${R}\n" "$display_num" "$f"
+                else
+                    printf "  ${G}%2d)${R} %s\n" "$display_num" "$f"
+                fi
+            done
+
+            echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
+            echo "  ${D}• Num carpeta (/): Entrar.  Num archivo: Seleccionar.${R}"
+            echo "  ${D}• 's': carpeta actual (busqueda recursiva).  '0': subir.  'q': cancelar.${R}"
+            if [ $nav_total_paginas -gt 1 ]; then
+                echo "  ${Y}• 'n': Siguiente página ($((nav_pagina+2))/$nav_total_paginas).  'p': Página anterior.${R}"
+            fi
+            echo "  ${C}• 'f <texto>': Filtrar/buscar por nombre (ej. f pruebas)${R}"
+            read -e -r -p "  > " resp_nav
+            local resp_nav_limpia
+            resp_nav_limpia=$(echo "$resp_nav" | tr '[:upper:]' '[:lower:]' | xargs 2>/dev/null)
+
+            if [ "$resp_nav_limpia" = "0" ] || [ "$resp_nav_limpia" = ".." ]; then
+                ruta_actual=$(dirname "$ruta_actual")
+                nav_pagina=0
+            elif [ "$resp_nav_limpia" = "s" ]; then
+                RUTA_SELECCIONADA="$ruta_actual"
+                break
+            elif [ "$resp_nav_limpia" = "q" ] || [ -z "$resp_nav_limpia" ]; then
+                break
+            elif [ "$resp_nav_limpia" = "n" ]; then
+                [ $((nav_pagina + 1)) -lt $nav_total_paginas ] && nav_pagina=$((nav_pagina + 1))
+            elif [ "$resp_nav_limpia" = "p" ] || [ "$resp_nav_limpia" = "a" ]; then
+                [ $nav_pagina -gt 0 ] && nav_pagina=$((nav_pagina - 1))
+            elif [[ "$resp_nav_limpia" =~ ^f[[:space:]] ]]; then
+                # Filtro por nombre dentro del directorio actual
+                local filtro_nombre="${resp_nav_limpia#f }"
+                local encontrados=()
+                for f_item in "${all_items[@]}"; do
+                    [[ "${f_item,,}" == *"$filtro_nombre"* ]] && encontrados+=("$f_item")
+                done
+                if [ ${#encontrados[@]} -eq 0 ]; then
+                    echo "  ${Y}No se encontraron coincidencias para '$filtro_nombre'.${R}"
+                    read -r -p "  Presiona Enter..."
+                elif [ ${#encontrados[@]} -eq 1 ]; then
+                    local ruta_elem="$ruta_actual/${encontrados[0]}"
+                    if [ -d "$ruta_elem" ]; then
+                        ruta_actual="$ruta_elem"; nav_pagina=0
+                    else
+                        RUTA_SELECCIONADA="$ruta_elem"; break
+                    fi
+                else
+                    echo
+                    echo "  ${C}Coincidencias:${R}"
+                    for (( fi=0; fi<${#encontrados[@]}; fi++ )); do
+                        local ruta_e="$ruta_actual/${encontrados[$fi]}"
+                        if [ -d "$ruta_e" ]; then
+                            printf "  ${G}%2d)${R} ${C}%s/${R}\n" "$((fi+1))" "${encontrados[$fi]}"
+                        else
+                            printf "  ${G}%2d)${R} %s\n" "$((fi+1))" "${encontrados[$fi]}"
+                        fi
+                    done
+                    read -e -r -p "  Elige numero: " sel_f
+                    sel_f=$(echo "$sel_f" | xargs 2>/dev/null)
+                    if [[ "$sel_f" =~ ^[0-9]+$ ]] && [ "$sel_f" -ge 1 ] && [ "$sel_f" -le ${#encontrados[@]} ]; then
+                        local ruta_elem="$ruta_actual/${encontrados[$((sel_f-1))]}"
+                        if [ -d "$ruta_elem" ]; then
+                            ruta_actual="$ruta_elem"; nav_pagina=0
+                        else
+                            RUTA_SELECCIONADA="$ruta_elem"; break
+                        fi
+                    fi
+                fi
+            elif [[ "$resp_nav_limpia" =~ ^[0-9]+$ ]] && [ "$resp_nav_limpia" -ge 1 ] && [ "$resp_nav_limpia" -le $nav_total ]; then
+                local elem="${all_items[$((resp_nav_limpia-1))]}"
+                local ruta_elem="$ruta_actual/$elem"
+                if [ -d "$ruta_elem" ]; then
+                    ruta_actual="$ruta_elem"; nav_pagina=0
+                else
+                    RUTA_SELECCIONADA="$ruta_elem"; break
+                fi
+            fi
+        done
+    elif [ "$modo_limpio" = "3" ] || [ "$modo_limpio" = "ls" ]; then
+        # Redirigir al navegador interactivo paginado en la carpeta actual
+        modo_limpio="1"
+        asistente_rutas
+        return
+    fi
+}
+
+
+# -----------------------------------------------------------------------------
+# 3.1.1. ejecutar_comando()
+# -----------------------------------------------------------------------------
+# Ejecuta de forma interactiva y controlada el comando seleccionado.
+#
+ejecutar_comando() {
+    local cmd="$1"
+    local ej="$2"
+    local cat="$3"
+
+    if [ "$cat" = "atajos" ]; then
+        echo
+        echo "  ${Y}Nota:${R} Los atajos de teclado son combinaciones de teclas, no comandos ejecutables."
+        read -r -p "  Presiona Enter para continuar..."
+        return
+    fi
+
+    # Extraer el binario/comando base (ej: 'cat', 'ls', 'grep', 'echo')
+    local cmd_base
+    cmd_base=$(echo "$cmd" | awk '{print $1}')
+
+    while true; do
+        echo
+        echo "  ${B}╭────────────────────────────────────────────────────────────────────╮${R}"
+        echo "  ${B}│${R} ${C}EJECUCIÓN CONTROLADA DE COMANDO${R}"
+        echo "  ${B}├────────────────────────────────────────────────────────────────────┤${R}"
+        echo "  ${B}│${R} ${C}Comando:${R}       ${G}$cmd${R}"
+        echo "  ${B}│${R} ${C}Ejemplo:${R}       ${Y}$ej${R}"
+        echo "  ${B}╰────────────────────────────────────────────────────────────────────╯${R}"
+        echo
+        echo "  ${D}• Presiona ${G}Enter${D} para usar el ejemplo completo: ${Y}$ej${R}"
+        echo "  ${D}• Escribe solo los argumentos para ${G}$cmd_base${D} (ej. tu texto o ruta)."
+        echo "  ${D}• TIP: Usa ${G}Tab${D} para autocompletar, o escribe ${G}?${D} para explorar/buscar rutas.${R}"
+        read -e -r -p "  ${C}>${R} " cmd_usuario
+
+        local cmd_usuario_limpio
+        cmd_usuario_limpio=$(echo "$cmd_usuario" | xargs 2>/dev/null)
+
+        # Asistente de selección interactiva de archivos locales o búsqueda si incluye '?' o 'b' o 'ls'
+        if [[ "$cmd_usuario_limpio" =~ \? ]] || [ "$cmd_usuario_limpio" = "b" ] || [ "$cmd_usuario_limpio" = "buscar" ] || [ "$cmd_usuario_limpio" = "ls" ]; then
+            # Extraer lo que el usuario escribió antes o después del '?'
+            local texto_previo="${cmd_usuario_limpio//\?/}"
+            texto_previo=$(echo "$texto_previo" | xargs 2>/dev/null)
+
+            asistente_rutas
+            if [ -n "$RUTA_SELECCIONADA" ]; then
+                local ruta_formateada="$RUTA_SELECCIONADA"
+                if [[ "$ruta_formateada" =~ \  ]]; then
+                    ruta_formateada="\"$ruta_formateada\""
+                fi
+
+                # Manejo especial para grep: requiere "texto_a_buscar" y "ruta"
+                if [ "$cmd_base" = "grep" ]; then
+                    if [ -z "$texto_previo" ]; then
+                        echo
+                        echo "  ${D}Ruta seleccionada: ${G}$RUTA_SELECCIONADA${R}"
+                        echo "  ${D}Solo escribe la PALABRA o PATRON a buscar dentro de esa ruta:${R}"
+                        read -e -r -p "  Patron de busqueda > " texto_busqueda
+                        texto_previo=$(echo "$texto_busqueda" | xargs 2>/dev/null)
+                    fi
+
+                    # Si la ruta elegida es una carpeta y no se incluyó la bandera -r, anteponer -rn para búsqueda recursiva
+                    if [ -d "$RUTA_SELECCIONADA" ]; then
+                        if [[ ! "$cmd" =~ -[a-zA-Z]*r ]] && [[ ! "$texto_previo" =~ -[a-zA-Z]*r ]]; then
+                            cmd_base="grep -rn"
+                        fi
+                    fi
+
+                    # El patrón va sin comillas extra al construir el argumento
+                    if [ -n "$texto_previo" ]; then
+                        cmd_usuario_limpio="$texto_previo $ruta_formateada"
+                    else
+                        cmd_usuario_limpio="$ruta_formateada"
+                    fi
+                else
+                    if [ -n "$texto_previo" ]; then
+                        cmd_usuario_limpio="$texto_previo $ruta_formateada"
+                    else
+                        cmd_usuario_limpio="$ruta_formateada"
+                    fi
+                fi
+            else
+                continue
+            fi
+        fi
+
+        local cmd_final=""
+        if [ -z "$cmd_usuario_limpio" ]; then
+            cmd_final="$ej"
+        else
+            # Obtener el primer token del cmd_base (ej: 'grep' de 'grep -rn')
+            local base_token
+            base_token=$(echo "$cmd_base" | awk '{print $1}')
+            # Obtener el primer token del input del usuario (sin comillas)
+            local primer_token
+            primer_token=$(echo "$cmd_usuario_limpio" | sed 's/^"\([^"]*\)".*/\1/' | awk '{print $1}')
+
+            if [ "$primer_token" = "$base_token" ] || [ "$primer_token" = "sudo" ]; then
+                # El usuario ya incluyó el comando completo
+                cmd_final="$cmd_usuario_limpio"
+            else
+                # Anteponer cmd_base (puede tener banderas como 'grep -rn')
+                cmd_final="$cmd_base $cmd_usuario_limpio"
+            fi
+        fi
+
+        # Filtro de seguridad para comandos potencialmente destructivos
+        if [[ "$cmd_final" =~ (rm|kill|sudo|dd|chmod\ 777|fuser|mkfs|reboot|shutdown) ]]; then
+            echo
+            echo "  ${R}[!] ADVERTENCIA DE SEGURIDAD:${R} Este comando puede borrar o modificar recursos del sistema."
+            echo "  Comando final: ${G}$cmd_final${R}"
+            read -e -r -p "  ¿Estás seguro de que deseas ejecutarlo? (s/N): " confirmacion
+            local conf_limpia
+            conf_limpia=$(echo "$confirmacion" | tr '[:upper:]' '[:lower:]' | xargs 2>/dev/null)
+            if [ "$conf_limpia" != "s" ] && [ "$conf_limpia" != "si" ] && [ "$conf_limpia" != "sí" ]; then
+                echo
+                echo "  ${Y}Ejecución cancelada por el usuario.${R}"
+                read -r -p "  Presiona Enter para continuar..."
+                return
+            fi
+        fi
+
+        echo
+        echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
+        echo "  ${G}► Ejecutando:${R} ${C}$cmd_final${R}"
+        echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
+        echo
+
+        eval "$cmd_final"
+        local codigo_salida=$?
+
+        echo
+        echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
+        if [ $codigo_salida -eq 0 ]; then
+            echo "  ${G}[OK] Ejecución finalizada con éxito (Código de salida: 0)${R}"
+        else
+            echo "  ${R}[ERROR] Ejecución finalizada con errores (Código de salida: $codigo_salida)${R}"
+        fi
+        echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
+        echo
+        echo "  ${D}• Presiona ${G}Enter${D} para volver a la lista."
+        echo "  ${D}• Escribe ${G}e${D} para volver a ejecutar pasando otros argumentos.${R}"
+        read -e -r -p "  > " re_opcion
+        local re_limpia
+        re_limpia=$(echo "$re_opcion" | tr '[:upper:]' '[:lower:]' | xargs 2>/dev/null)
+
+        if [ "$re_limpia" != "e" ] && [ "$re_limpia" != "x" ] && [ "$re_limpia" != "ejecutar" ]; then
+            break
+        fi
+    done
+}
+
+
+# -----------------------------------------------------------------------------
 # 3.2. mostrar_lista()
 # -----------------------------------------------------------------------------
 # Muestra una lista de comandos con paginación limpia de 15 elementos.
@@ -297,7 +632,7 @@ mostrar_lista() {
         local num_inicio=$((inicio + 1))
         local num_fin=$fin
 
-        echo "  ${D}• Ver detalle:${R}   Escribe el número de la lista (${G}$num_inicio-$num_fin${R})."
+        echo "  ${D}• Ver / Ejecutar:${R} Escribe el número (${G}$num_inicio-$num_fin${R}) para ver detalle, o ${G}e<número>${R} para ejecutar directo."
         if [ $total_paginas -gt 1 ]; then
             if [ $((pagina + 1)) -lt $total_paginas ] && [ $pagina -gt 0 ]; then
                 echo "  ${D}• Cambiar pág:${R}   Escribe ${G}n${R} (siguiente) o ${G}p${R} (anterior)."
@@ -321,10 +656,29 @@ mostrar_lista() {
             if [ $pagina -gt 0 ]; then
                 pagina=$((pagina - 1))
             fi
+        elif [[ "$resp_limpia" =~ ^e[0-9]+$ ]] || [[ "$resp_limpia" =~ ^x[0-9]+$ ]]; then
+            local num_ejecutar="${resp_limpia#?}"
+            if [ "$num_ejecutar" -ge 1 ] && [ "$num_ejecutar" -le $total ]; then
+                local item_sel="${items[$((num_ejecutar-1))]}"
+                IFS='|' read -r cmd_sel desc_sel ej_sel exp_sel cat_sel <<< "$item_sel"
+                ejecutar_comando "$cmd_sel" "$ej_sel" "$cat_sel"
+            fi
         elif [[ "$resp" =~ ^[0-9]+$ ]] && [ "$resp" -ge 1 ] && [ "$resp" -le $total ]; then
-            detalle "${items[$((resp-1))]}"
+            local item_sel="${items[$((resp-1))]}"
+            IFS='|' read -r cmd_sel desc_sel ej_sel exp_sel cat_sel <<< "$item_sel"
+            detalle "$item_sel"
             echo
-            read -p "  Presiona Enter para continuar..."
+            if [ "$cat_sel" != "atajos" ]; then
+                echo "  ${D}• Acciones:${R} Presiona ${G}e${R} (o ${G}x${R}) para ejecutar este comando, o ${G}Enter${R} para volver."
+                read -p "  > " resp_det
+                local resp_det_limpia
+                resp_det_limpia=$(echo "$resp_det" | tr '[:upper:]' '[:lower:]' | xargs 2>/dev/null)
+                if [ "$resp_det_limpia" = "e" ] || [ "$resp_det_limpia" = "x" ] || [ "$resp_det_limpia" = "ejecutar" ]; then
+                    ejecutar_comando "$cmd_sel" "$ej_sel" "$cat_sel"
+                fi
+            else
+                read -p "  Presiona Enter para continuar..."
+            fi
         elif [ -z "$resp" ] || [ "$resp_limpia" = "q" ] || [ "$resp_limpia" = "0" ] || [ "$resp_limpia" = "m" ]; then
             break
         fi

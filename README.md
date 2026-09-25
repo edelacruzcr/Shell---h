@@ -1,4 +1,4 @@
-# 📖 ayuda.sh
+# ayuda.sh
 
 ![Versión](https://img.shields.io/badge/versión-1.0.0-blue.svg)
 ![Licencia](https://img.shields.io/badge/licencia-MIT-green.svg)
@@ -10,7 +10,7 @@ Escribes una palabra, eliges un comando y te explica detalladamente qué hace, c
 
 ---
 
-## ✨ Características
+## Características
 
 - **Interactivo**: Menú con categorías, paginación de 15 ítems por página y búsqueda por palabra clave.
 - **Explicaciones Claras**: Cada comando incluye sintaxis con marcadores descriptivos (`<nombre_de_archivo.txt>`), ejemplos reales y recomendaciones de uso.
@@ -20,7 +20,7 @@ Escribes una palabra, eliges un comando y te explica detalladamente qué hace, c
 
 ---
 
-## 📦 Instalación Súper Sencilla (1 solo paso)
+## Instalación Súper Sencilla (1 solo paso)
 
 Copia y pega este comando en tu terminal para instalarlo automáticamente (descarga el script, otorga permisos, configura el alias `ayuda` y recarga tu sesión):
 
@@ -32,7 +32,7 @@ curl -sSL https://raw.githubusercontent.com/edelacruzcr/Shell-ayuda/main/ayuda.s
 
 ---
 
-## 🔄 Actualización Limpia
+## Actualización Limpia
 
 Si ya tenías instalado `ayuda` y deseas actualizarlo a la versión más reciente sin afectar nada en tu sistema:
 
@@ -52,7 +52,7 @@ cp ayuda.sh ~/.ayuda.sh && chmod +x ~/.ayuda.sh && exec bash
 
 ---
 
-## 🚀 Modo de Uso
+## Modo de Uso
 
 ```bash
 ayuda              # Abre el menú interactivo principal
@@ -68,18 +68,24 @@ ayuda cat          # Muestra directamente detalles del comando cat
 - **Avanzar de página**: Escribe `n` (o `s`) y pulsa Enter para ir a la siguiente página.
 - **Retroceder de página**: Escribe `p` (o `a`) y pulsa Enter para ir a la página anterior.
 - **Número de opción** (ej: `3`): Abre la ficha técnica y detallada de ese comando.
+- **Ejecución directa** (ej: `e3` o `x3`): Inicia la ejecución controlada del comando número 3.
+- **Ejecución desde la ficha**: Dentro de la ficha del comando, presiona `e` para ejecutarlo.
+- **Asistente de rutas y archivos (`?`)**: Si no recuerdas dónde está un archivo o cómo se llama, escribe **`?`** (o `b`) al ingresar los argumentos. Podrás:
+  - **Navegar interactivamente** por carpetas (entrar, subir niveles `..` y seleccionar).
+  - **Buscar archivos** por palabra clave o extensión (ej: `log`, `.txt`, `config`).
+  - **Autocompletar con `Tab`**: Presiona **`Tab`** para autocompletar cualquier ruta en tiempo real.
 - **Enter sin texto**: Regresa al menú principal.
 - **0** o **q**: Sale de la aplicación.
 
 ---
 
-## 📸 Ejemplo de Uso
+## Ejemplo de Uso
 
 ### Menú Principal
 
 ```text
   ╔═══════════════════════════════════════════════════════════════════╗
-  ║   📖  AYUDA INTERACTIVA DE COMANDOS                              ║
+  ║       AYUDA INTERACTIVA DE COMANDOS                              ║
   ║   Escribe una opción o una palabra para buscar                    ║
   ╚═══════════════════════════════════════════════════════════════════╝
 
@@ -116,7 +122,7 @@ ayuda cat          # Muestra directamente detalles del comando cat
 
 ---
 
-## 📂 Categorías Disponibles
+## Categorías Disponibles
 
 | Categoría | Qué incluye |
 |-----------|-------------|
@@ -130,7 +136,7 @@ ayuda cat          # Muestra directamente detalles del comando cat
 
 ---
 
-## 🛠️ Añadir tus propios comandos
+## Añadir tus propios comandos
 
 Edita `ayuda.sh` y busca el array `CMDS=(`. Cada entrada utiliza la siguiente estructura separada por tuberías (`|`):
 
@@ -151,13 +157,13 @@ Ejemplo real:
 
 ---
 
-## 📋 Requisitos
+## Requisitos
 
 - Bash 4.0 o superior (cualquier Linux moderno, macOS con Bash actualizado, WSL en Windows).
 - Terminal con soporte para colores ANSI.
 
 ---
 
-## 📝 Licencia
+## Licencia
 
 MIT. Úsalo, modifícalo y compártelo libremente.
