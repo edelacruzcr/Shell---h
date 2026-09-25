@@ -32,15 +32,18 @@ curl -sSL https://raw.githubusercontent.com/edelacruzcr/Shell---h/main/ayuda.sh 
 
 Si ya tenías instalado `ayuda` y deseas actualizarlo a la versión más reciente sin afectar nada en tu sistema:
 
-### Opción A: Actualizar vía `curl` (desde GitHub)
+### Opción A: Vía `curl` directo (Recomendado)
+Funciona desde cualquier carpeta de tu terminal sin necesidad de clonar nada:
 ```bash
 curl -sSL https://raw.githubusercontent.com/edelacruzcr/Shell---h/main/ayuda.sh -o ~/.ayuda.sh && chmod +x ~/.ayuda.sh && exec bash
 ```
 
-### Opción B: Actualizar desde tu repositorio local
-Si clonaste o editaste el código localmente:
+### Opción B: Si clonaste el repositorio de GitHub
+Si descargaste o clonaste el proyecto en tu máquina, entra a la carpeta antes de copiar:
 ```bash
-cp ayuda.sh ~/.ayuda.sh && chmod +x ~/.ayuda.sh
+git clone https://github.com/edelacruzcr/Shell---h.git
+cd Shell---h
+cp ayuda.sh ~/.ayuda.sh && chmod +x ~/.ayuda.sh && exec bash
 ```
 
 ---
