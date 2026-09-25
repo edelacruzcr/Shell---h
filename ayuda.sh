@@ -212,6 +212,7 @@ CMDS=(
   "Ctrl+Z|suspende y envía proceso a segundo plano|Ctrl+Z|Pausa temporalmente la tarea en ejecución y la deja en segundo plano (puedes usar 'fg' para reanudarla).|atajos"
   "fg|reanuda proceso suspendido en primer plano|fg|Vuelve a traer a la pantalla el programa o tarea que habías pausado previamente con Ctrl+Z.|atajos"
   "Ctrl+D|cierra sesión o sale de la terminal|Ctrl+D|Envía el carácter de fin de archivo (EOF) cerrando la shell o la conexión SSH activa.|atajos"
+
 )
 
 
@@ -255,6 +256,21 @@ mostrar_lista() {
     local pagina=0
     local total_paginas=$(( (total + por_pagina - 1) / por_pagina ))
 
+    # Calcular el ancho dinámico para la columna de comandos según la lista actual
+    local max_len=0
+    for item in "${items[@]}"; do
+        IFS='|' read -r cmd_tmp desc_tmp ej_tmp exp_tmp cat_tmp <<< "$item"
+        if [ ${#cmd_tmp} -gt $max_len ]; then
+            max_len=${#cmd_tmp}
+        fi
+    done
+    local ancho_col=$((max_len + 3))
+    if [ $ancho_col -lt 12 ]; then
+        ancho_col=12
+    elif [ $ancho_col -gt 38 ]; then
+        ancho_col=38
+    fi
+
     while true; do
         clear
         echo
@@ -273,7 +289,7 @@ mostrar_lista() {
 
         for (( i=inicio; i<fin; i++ )); do
             IFS='|' read -r cmd desc ej exp cat <<< "${items[$i]}"
-            printf "  ${G}%2d)${R} ${C}%-40s${R} %s\n" "$((i+1))" "$cmd" "$desc"
+            printf "  ${G}%2d)${R} ${C}%-*s${R} %s\n" "$((i+1))" "$ancho_col" "$cmd" "$desc"
         done
 
         echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
