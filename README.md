@@ -58,9 +58,11 @@ ayuda cat          # Muestra directamente detalles del comando cat
 - **1 a 6**: Explora una categoría específica.
 - **7**: Muestra **TODOS** los comandos registrados.
 - **Escribir cualquier palabra** (ej: `copiar`, `proceso`, `red`): Realiza una búsqueda instantánea.
-- **Navegación de páginas**: Escribe `n` (siguiente página) o `p` (página anterior) en listas largas.
+- **Avanzar de página**: Escribe `n` (o `s`) y pulsa Enter para ir a la siguiente página.
+- **Retroceder de página**: Escribe `p` (o `a`) y pulsa Enter para ir a la página anterior.
 - **Número de opción** (ej: `3`): Abre la ficha técnica y detallada de ese comando.
-- **0** o **q**: Sale del menú.
+- **Enter sin texto**: Regresa al menú principal.
+- **0** o **q**: Sale de la aplicación.
 
 ---
 

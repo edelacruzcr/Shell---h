@@ -1,4 +1,9 @@
 #!/bin/bash
+# Re-ejecutar automáticamente con Bash si el script se llama con 'sh' o 'dash' (común en Debian/Ubuntu)
+if [ -z "$BASH_VERSION" ]; then
+    exec bash "$0" "$@"
+fi
+
 # =============================================================================
 #  ayuda.sh - Guía interactiva de comandos de terminal
 # =============================================================================
@@ -246,14 +251,24 @@ mostrar_lista() {
         done
 
         echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
-        
+
+        local num_inicio=$((inicio + 1))
+        local num_fin=$fin
+
+        echo "  ${D}• Ver detalle:${R}   Escribe el número de la lista (${G}$num_inicio-$num_fin${R})."
         if [ $total_paginas -gt 1 ]; then
-            echo "  ${D}[n: sig. página | p: pág. previa | 1-$total: ver detalle | Enter: menú]${R}"
-        else
-            echo "  ${D}[1-$total: ver detalle | Enter: menú de inicio]${R}"
+            if [ $((pagina + 1)) -lt $total_paginas ] && [ $pagina -gt 0 ]; then
+                echo "  ${D}• Cambiar pág:${R}   Escribe ${G}n${R} (siguiente) o ${G}p${R} (anterior)."
+            elif [ $((pagina + 1)) -lt $total_paginas ]; then
+                echo "  ${D}• Cambiar pág:${R}   Escribe ${G}n${R} (o ${G}s${R}) y pulsa Enter para la siguiente página."
+            elif [ $pagina -gt 0 ]; then
+                echo "  ${D}• Cambiar pág:${R}   Escribe ${G}p${R} (o ${G}a${R}) y pulsa Enter para la página anterior."
+            fi
         fi
+        echo "  ${D}• Volver al menú:${R} Presiona la tecla ${G}Enter${R}."
+        echo "  ${B}──────────────────────────────────────────────────────────────────────────────────${R}"
         echo
-        read -p "  Selecciona una opción: " resp
+        read -p "  > " resp
         resp_limpia=$(echo "$resp" | tr '[:upper:]' '[:lower:]' | xargs 2>/dev/null)
 
         if [ "$resp_limpia" = "n" ] || [ "$resp_limpia" = "s" ]; then
